@@ -1,0 +1,102 @@
+<template>
+	<view>
+		<view class="tab-con">
+			<view class="sub-tab">
+				<view class="item" :class="tabIndex==1 ? 'active' : ''" @click="ontabtap(1)">县区</view>
+				<view class="item" :class="tabIndex==2 ? 'active' : ''" @click="ontabtap(2)">委办局</view>
+				<view class="item" :class="tabIndex==3 ? 'active' : ''" @click="ontabtap(3)">重要机构</view>
+			</view>
+			<mescroll-uni @down="downCallBack" @init ="initMescroll" @up="upCallback" top="200">
+				<view class="sub-tab-con">
+					<view class="infor-details " >
+						<view class="article line-bottom"  style="margin-top:20rpx;padding-bottom:30rpx;padding-top: 0px;" v-for="(item,index) in nanchangList" :key="index"> 
+							<view class="userbox" @click="goBlogger(item)" >
+								<image class="userlogo" :src="item.logo?item.logo:'/static/img/user/user_logo@3x.png'"></image>
+								<view class="righttxt" style="margin-right: 40rpx; padding-right:100rpx;flex: 1;">
+									<view class="name">{{item.name?item.name:''}}</view>
+									<view class="time" style="line-height: 50rpx;">{{item.desc?item.desc:''}}</view>
+								</view>
+								<view class="attention" v-on:click.stop="toFollow(item,index)" v-if="item.subscribe==0">+关注</view>
+								<view class="attention-y" v-on:click.stop="toFollow(item,index)" v-else>已关注</view>
+							</view>
+						</view>
+					</view>
+				</view>
+			</mescroll-uni>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				tabIndex: 1,
+				mescroll : '',
+				nanchangList:[],
+			}
+		},
+		methods: {
+			ontabtap(index) {
+				this.tabIndex = index;
+				this.downCallBack(this.mescroll);
+			},
+			initMescroll(mescroll){
+				this.mescroll = mescroll;
+			},
+			downCallBack(mescroll)
+			{
+				this.nanchangList=[];
+				mescroll.resetUpScroll();
+			},
+			upCallback(mescroll)
+			{
+				const url = 'api/ncrb/';
+				let data = {
+					action: 'nch',
+					mod:'list',
+					loadnum: (mescroll.num-1)*mescroll.size,
+					tpp: mescroll.size,
+					type:this.tabIndex,
+				};
+				var that = this;
+				this.request.get(url,data,mescroll).then(res=>{
+					that.nanchangList = that.nanchangList.concat(res.data); //追加新数据
+				})
+			}, 
+			goBlogger(item){
+				uni.navigateTo({
+					url:'/pages/nanchang/blogger?id='+item.id
+				})
+			},
+			//关注
+			toFollow:function(item,index){
+				if(this.request.alreadyLogin()){
+					const url = 'api/ncrb/';
+					let data = {
+						action: 'nch',
+						mod: 'subscribe',
+						id:item.id
+					};
+					var that = this;
+					this.request.get(url,data).then(res=>{
+						if(res.code==200){
+							console.log("res: " + JSON.stringify(res));
+							if(res.data.subscribe == 1){
+								that.request.toastTips("关注成功");
+							}else{
+								that.request.toastTips("取关成功");
+							}
+							that.nanchangList[index].subscribe = res.data.subscribe;
+						}
+					})
+				}
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import "@/common/css/common.scss";
+	@import "@/common/css/other.scss";
+</style>

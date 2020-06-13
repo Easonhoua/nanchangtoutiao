@@ -1,0 +1,47 @@
+	/* 白色背景页 */
+	.content {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		background-color: #FFFFFF;
+		width: 750rpx;
+		font-size: 28rpx;
+	}
+	/* 带圆角的button */
+	.circle-corner-button {
+		width: 550rpx;
+		height: 80rpx;
+		line-height: 80rpx;
+		margin-left: 100rpx;
+		border-radius: 10rpx;
+		text-align: center;
+		color: #FFFFFF;
+		background-color: #264980;
+		/* background:linear-gradient(90deg,rgba(87,173,254,1) 0%,rgba(38,126,255,1) 100%); */
+		font-size: 30rpx;
+	}
+	/* 右边箭头样式 */
+	.right-arrow-img {
+		width: 24rpx;
+		height: 24rpx;
+		min-width: 24rpx;
+		line-height: 40rpx;
+		display: inline-block;
+		margin-right: 20rpx;
+		margin-left: 10rpx;
+		background-image: url('~@/static/img/user/user_arrow_r@3x.png');
+		background-size: contain;
+		z-index: 5;
+	}
+	/* 从左至右排列 */
+	.display-row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+	
+	/* 从上至下排列 */
+	.display-column {
+		display: flex;
+		flex-direction: column;
+	}

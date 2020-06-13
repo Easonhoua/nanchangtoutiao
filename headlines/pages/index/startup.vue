@@ -1,0 +1,143 @@
+<template>
+    <view class="conten-view">
+		<view @tap="setupLaunchGuide" class="goto">跳过{{second}}</view>
+		<image class="launch-swiper" @click="gotoDetail()" :src="ad.pic" mode="widthFix"></image>
+	</view>
+</template>
+
+<script>
+	
+export default {
+    data() {
+        return {
+			second:5,
+			sid:0,
+			sid2:0,
+			ad:{},
+			
+		}
+    },
+	onShow() {
+		var _this =this;
+		_this.sid2=setInterval(function(){
+			_this.second--;
+			if(_this.second<=0){
+				_this.second=0;
+				clearInterval(_this.sid2);
+				_this.sid2=0;
+				_this.setupLaunchGuide();
+			}
+		},1000);
+		
+	},
+    onLoad() {
+		var ad1=uni.getStorageSync("globalDataAd");
+		if(ad1){
+			this.ad=ad1;
+			this.second = ad1.time;
+		}
+		// var _this =this;
+		// this.sid=setInterval(function(){
+		// 	_this.second--;
+		// 	if(_this.second<=0){
+		// 		_this.second=0;
+		// 		clearInterval(_this.sid);
+		// 		_this.sid=0;
+		// 		_this.setupLaunchGuide();
+		// 	}
+		// },1000);
+    },
+    methods: {
+		gotoDetail(){
+			if(this.sid!=0){
+				clearInterval(this.sid);
+			}
+			if(this.sid2!=0){
+				clearInterval(this.sid2);
+			}
+			if(this.ad.style == 'h5'){
+				this.util.gotoDetail(this.ad);
+				// if(this.ad.url.indexOf("unionid={unionid}") >=0){
+				// 	if(this.request.alreadyLogin()){
+				// 		this.ad.url = this.ad.url.replace(/{unionid}/,uni.getStorageSync("unionid"));
+				// 		var temUrl = encodeURIComponent(this.ad.url);
+				// 		uni.navigateTo({
+				// 			url: "/pages/webView/webView?webUrl=" + temUrl+"&adFlag=true"
+				// 		})
+				// 	}
+				// }else{
+				// 	var temUrl = encodeURIComponent(this.ad.url);
+				// 	uni.navigateTo({
+				// 		url: "/pages/webView/webView?webUrl=" + temUrl+"&adFlag=true"
+				// 	})
+				// }
+			}else{
+				if(this.ad.id == 0){
+					return false;
+				}
+				this.util.gotoDetail(this.ad);
+			}
+			
+		},
+        setupLaunchGuide: function() {
+			console.log("this.sid="+this.sid);
+			// if(this.sid!=0){
+				clearInterval(this.sid);
+				clearInterval(this.sid2);
+			// }
+			// #ifdef APP-PLUS
+				// 打正式包,发布应用市场
+				if (!(uni.getStorageSync("launchGuide") === "hide")) {
+					uni.reLaunch({
+						url: "/pages/index/launchGuide"
+					})
+				}else{
+					uni.switchTab({
+						url:"/pages/news/index"
+					})
+					
+					// uni.navigateTo({
+					// 	url:'/pages/index/home1'
+					// })
+				}
+				// 打测试包,发布蒲公英内测
+				// uni.navigateTo({
+				// 	url: "/pages/launchGuide/launchGuide"
+				// })
+			// #endif
+			
+			// #ifdef H5
+				uni.switchTab({
+					url:"/pages/news/index"
+				})
+			// #endif
+			
+        },
+    }
+};
+</script>
+<style>
+	.conten-view{
+		width: 100vw;
+		height: 100vh;
+		overflow: hidden;
+	}
+	.launch-swiper{
+		width: 100vw;
+		height: 100vh;
+	}
+	.goto{
+		float: right;
+		padding: 10rpx;
+		border: 1px #ffffff solid;
+		border-radius: 16rpx;
+		position: absolute;
+		right: 30rpx;
+		color: #ffffff;
+		top: 30rpx;z-index: 10;font-size: 28rpx;
+		/* #ifndef APP-NVUE */
+		margin-top: var(--status-bar-height);
+		/* #endif */
+	}
+	
+</style>

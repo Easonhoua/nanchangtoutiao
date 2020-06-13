@@ -1,0 +1,428 @@
+<template>
+	<view class="page-news">
+		<uni-list class="listview" :enableBackToTop="true" :scroll-y="true" @scrolltolower="loadMore()">
+		    <uni-refresh class="refresh" @refresh="onrefresh" @pullingdown="onpullingdown" :display="refreshing ? 'show' : 'hide'">
+		        <div class="refresh-view">
+		            <image class="refresh-icon" :src="refreshIcon" :style="{width: (refreshing || pulling) ? 0: '32px'}"
+		                :class="{'refresh-icon-active': refreshFlag}"></image>
+		            <uni-load-more v-if="refreshing" class="loading-icon" status="loading" :contentText="loadingMoreText"></uni-load-more>
+		            <text class="loading-text">{{refreshText}}</text>
+		        </div>
+		    </uni-refresh>
+			
+		    <uni-cell v-for="(item, index) in dataList" :key="item.id">
+				<news-video-item v-if="item.style == 'video'" :newsItem="item" @click="goDetail(item)" v-on:videoPlay="videoPlay" ></news-video-item>
+				<news-pics-item v-if="item.style == 'pics'" :newsItem="item"  @click="goDetail(item)"></news-pics-item>
+				<news-bigpic-item v-else-if="item.style == 'activity' || item.style == 'video'" :newsItem="item"  @click="goDetail(item)"></news-bigpic-item>
+				<news-item v-else :newsItem="item"  @click="goDetail(item)"></news-item>
+		    </uni-cell>
+		    <uni-cell v-if="(isLoading || dataList.length > 4)&&!isNoData">
+		        <view class="loading-more">
+		            <text class="loading-more-text">{{loadingText}}</text>
+		        </view>
+		    </uni-cell>
+		</uni-list>
+	</view>
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	import api from '@/api/index.js';
+	import uniList from '@/components/uni-list.vue';
+	import uniCell from '@/components/uni-cell.vue';
+	import uniRefresh from '@/components/uni-refresh.vue';
+	import uniLoadMore from '@/components/uni-load-more.vue';
+	import newsItem from '@/components/item-list/news-item.nvue';
+	import newsPicsItem from '@/components/item-list/news-pics-item.nvue';
+	import newsBigpicItem from '@/components/item-list/news-bigpic-item.nvue';
+	import newsVideoItem from '@/components/item-list/news-video-item.nvue';
+	export default {
+		components: {
+			uniList,
+			uniCell,
+			uniRefresh,
+			uniLoadMore,
+			newsItem,
+			newsPicsItem,
+			newsBigpicItem,
+			newsVideoItem
+		},
+		data() {
+			return {
+				dataList: [],
+				keyword:'',
+				navigateFlag: false,
+				pulling: false,
+				refreshing: false,
+				refreshFlag: false,
+				refreshText: "",
+				isLoading: false,
+				loadingText: '加载中...',
+				isNoData: false,
+				pageNo: 0,
+				loadnum: 0,
+				tpp: 30,
+				angle: 0,
+				currDate:'',
+				weekday:'',
+				requestParams: {
+					type:20
+				},
+				loadingMoreText: {
+					contentdown: '',
+					contentrefresh: '',
+					contentnomore: ''
+				},
+				hasNotchInScreen:false,//是否是刘海屏
+				refreshIcon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5QTFRFcHBw3Nzct7e39vb2ycnJioqK7e3tpqam29vb////D8oK7wAAAAp0Uk5T////////////ALLMLM8AAABxSURBVHja7JVBDoAgDASrjqj//7CJBi90iyYeOHTPMwmFZrHjYyyFYYUy1bwUZqtJIYVxhf1a6u0R7iUvWsCcrEtwJHp8MwMdvh2amHduiZD3rpWId9+BgPd7Cc2LIkPyqvlQvKxKBJ//Qwq/CacAAwDUv0a0YuKhzgAAAABJRU5ErkJggg==",
+				videoContextList: {},
+				videoContext: '',
+				typeDataList:[]
+			}
+		},
+		created() {
+			this.pullTimer = null;
+			let _this = this;
+		},
+		onReady() {
+			// #ifdef APP-PLUS
+			this.hasNotchInScreen = plus.navigator.hasNotchInScreen();
+			// this.statusBarHeight = plus.navigator.hasNotchInScreen() ? '66upx':'40upx';
+			// #endif
+			// this.loadData(true);
+		},
+		onLoad(e) {
+			console.log(e);
+			if (e.typeId) {
+				// if(e.typeId == 10){
+				// 	uni.setNavigationBarTitle({
+				// 		title:"问政列表"
+				// 	})
+				// }else if(e.typeId == 20){
+				// 	uni.setNavigationBarTitle({
+				// 		title:"政经周刊"
+				// 	})
+				// }else{
+				// 	uni.setNavigationBarTitle({
+				// 		title:"新闻列表"
+				// 	})
+				// }
+				this.requestParams.type = e.typeId;
+				this.loadData(true);
+				
+				this.loadTypeData(e.typeId);
+			}
+		},
+		onHide(){
+			if(this.videoContext){
+				this.videoContext.pause();
+			}
+		},
+		methods: {
+			
+			loadTypeData(typeId){
+				var url = 'api/ncrb/';
+				var sendData={
+					"action":"type"
+				}
+				api.get(url,sendData).then(result =>{
+					this.typeDataList = result.data;
+					// console.log("this.typeDataList: " + JSON.stringify(this.typeDataList));
+					this.typeDataList.forEach(function(item){
+						if(item.id == typeId){
+							uni.setNavigationBarTitle({
+								title:item.name
+							})
+						}
+					});
+				});
+			},
+			loadData(refresh) {
+				let _this = this;
+				if (this.isLoading) {
+					return;
+				}
+				if(refresh){
+					_this.dataList = [];
+					_this.pageNo = 0;
+					_this.loadnum =0;
+					_this.requestParams.loadnum = 0;
+					this.isNoData = false;
+				}
+				this.isLoading = true;
+				this.requestParams.keyword = this.keyword;
+				
+				var url = 'api/ncrb/';
+				api.get(url,_this.requestParams).then(result =>{
+					if(result.code === 200){
+						const data = result.data;
+						_this.isNoData = (data.length <= 0);
+						var data_list=[];
+						if (!_this.isNoData) {
+							data_list = data.map((news) => {
+								if(news.style == 'video'){
+									var video = uni.createVideoContext(news.id);
+									_this.videoContextList[news.id] = video;
+								}
+								news.id = news.id;
+								news.datetime = utils.friendlyDate(news.dateline+"000");
+								news.time = utils.formatMinutesTime(news.dateline+"000");
+								return news;
+							});
+						
+							if (refresh) {
+								_this.dataList = data_list;
+							} else {
+								_this.dataList = _this.dataList.concat(data_list);
+								_this.dataList = utils.unique(_this.dataList,"id");
+								
+							}
+							_this.pageNo += 1;
+							_this.loadnum = _this.pageNo * _this.tpp;
+							_this.requestParams.loadnum = _this.loadnum;
+							console.log(_this.pageNo,_this.loadnum,_this.requestParams.loadnum)
+						}
+					}else{
+						if (_this.dataList.length == 0) {
+							_this.isNoData = true;
+						}
+					}
+					_this.isLoading = false;
+					if (refresh) {
+						_this.refreshing = false;
+						_this.refreshFlag = false;
+						_this.refreshText = "已刷新";
+						_this.pulling = false;
+						if (_this.pullTimer) {
+							clearTimeout(_this.pullTimer);
+						}
+						_this.pullTimer = setTimeout(() => {
+							_this.pulling = false;
+						}, 1000);
+					}
+				}).catch(response => {
+					_this.isLoading = false;
+					console.log(response);
+					if (_this.dataList.length == 0) {
+						_this.isNoData = true;
+					}
+				});
+			},
+			loadMore(e) {
+				if (!this.isNoData) {
+					this.loadData();
+				}
+			},
+			clear() {
+				this.dataList = [];
+				this.loadnum = 0;
+				this.pageNo = 0;
+			},
+			goDetail(detail) {
+				if (this.navigateFlag) {
+					return;
+				}
+				this.navigateFlag = true;
+				
+				utils.gotoDetail(detail);
+				setTimeout(() => {
+					this.navigateFlag = false;
+				}, 200)
+			},
+			refreshData() {
+				if (this.isLoading) {
+					return;
+				}
+				this.pulling = true;
+				this.refreshing = true;
+				this.refreshText = "正在刷新...";
+				this.loadData(true);
+			},
+			onrefresh(e) {
+				this.refreshData();
+			},
+			search() {
+				this.loadData(true);
+			},
+			toSearch() {
+				uni.redirectTo({
+					url: '/pages/search/search'
+				});
+			},
+			clearkeyWord() {
+				this.keyword = '';
+			},
+			goback() {
+				uni.navigateBack({});
+			},
+			onpullingdown(e) {
+				if (this.refreshing) {
+					return;
+				}
+				this.pulling = false;
+				if (Math.abs(e.pullingDistance) > Math.abs(e.viewHeight)) {
+					this.refreshFlag = true;
+					this.refreshText = "释放立即刷新";
+				} else {
+					this.refreshFlag = false;
+					this.refreshText = "下拉可以刷新";
+				}
+			},
+			videoPlay(item) {
+				if (this.videoContext && item.id != this.videoContext.id ) {
+					this.videoContext.pause();
+				}
+				var video = this.videoContextList[item.id];
+				this.remarkVideo(video);
+			},
+			remarkVideo(video) {
+				this.videoContext = video;
+			}
+		},
+		onNavigationBarButtonTap(e){
+			console.log("e: " + JSON.stringify(e));
+			uni.navigateTo({
+				url:'/pages/search/search'
+			})
+		}
+	}
+</script>
+
+<style scoped>
+	.no-data {
+		flex: 1;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 10;
+	}
+
+	.page-news {
+		flex: 1;
+		flex-direction: column;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+	}
+	
+	.header{
+		padding:30rpx;
+		font-size: 28rpx;
+		position: fixed;
+		width:750upx;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		background-color: #FFFFFF;
+		z-index: 3;
+	}
+	.title{
+		font-size: 32rpx;
+		font-weight:600;
+		margin-bottom:14rpx;
+	}
+	.searchbox{
+		width: 520rpx;
+		position:relative;
+	}
+	.input{
+		border-radius: 20rpx;
+		background-color: #eeeef0;
+		height:68rpx;
+		padding-left:70rpx;
+		font-size: 28rpx;
+	}
+	.close{
+		width:30rpx;
+		height:30rpx;
+		position: absolute;
+		right:10rpx;
+		top:20rpx;
+	}
+	.txt{
+		font-size: 28rpx;
+	}
+	.back{
+		width:40rpx;
+		height:40rpx;
+	}
+	.icon{
+		width: 40rpx;
+		height:40rpx;
+		position: absolute;
+		left:24rpx;
+		top:20rpx;
+	}
+
+	.listview {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		/* #ifndef APP-NVUE */
+		display: flex;
+		flex-direction: column;
+		/* #endif */
+	}
+
+	.refresh {
+		justify-content: center;
+	}
+
+	.refresh-view {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		width: 750rpx;
+		height: 64px;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.refresh-icon {
+		width: 32px;
+		height: 32px;
+		transition-duration: .5s;
+		transition-property: transform;
+		transform: rotate(0deg);
+		transform-origin: 15px 15px;
+	}
+
+	.refresh-icon-active {
+		transform: rotate(180deg);
+	}
+
+	.loading-icon {
+		width: 28px;
+		height: 28px;
+		margin-right: 5px;
+		color: gray;
+	}
+
+	.loading-text {
+		margin-left: 2px;
+		font-size: 16px;
+		color: #999999;
+	}
+
+	.loading-more {
+		align-items: center;
+		justify-content: center;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		text-align: center;
+	}
+
+	.loading-more-text {
+		font-size: 28upx;
+		color: #999;
+	}
+	
+</style>

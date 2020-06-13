@@ -1,0 +1,135 @@
+<template>
+	<view class="subrequirement">
+		<image class="bg" src="/static/img/home/bg@3x.png" mode="widthFix"></image>
+		<view class="header-icon-w" style="height: 110rpx;">
+			<image class="icon" src="/static/img/common/w_back@3x.png" @click="goBack()"></image>
+			<image class="icon" src="/static/img/home/search_w@3x.png" @click="goSearch()"></image>
+		</view><!-- 白色图标头部 -->
+		<view class="cellbox spokesman" style="top: 110rpx;">
+			<text class="title">新闻发言人</text>
+			<text class="tip">国家、政党、社会团体任命或指定的专职新闻发布人员。</text>
+			<mescroll-uni @down="downCallBack" @init ="initMescroll" @up="upCallback" top="320">
+				<view class="inner" style="margin: 0rpx 40rpx;" v-for="(item,index) in nchList" :key="index">
+					<view class="panel">
+						<view class="spokesman-panel-con">
+							<view class="userlogo" @tap.stop="jumpDetail(item.id)">
+								<image class="logo" :src="item.logo"></image>
+							</view>
+							<view class="txtbox" @tap.stop="jumpDetail(item.id)">
+								<text class="name">{{item.name}}</text>
+								<text class="txt-cut-three" style="font-size: 22rpx;color: #919191;">{{item.desc}}</text>
+								<!-- <text class="tip txt-cut">市委秘书长</text> -->
+							</view>
+							<view :class="item.subscribe == 0 ? 'attention' : 'attention-y'" @click="releaseOperation(item.id,index)">{{item.subscribeText ? item.subscribeText : ''}}</view>
+						</view>
+					</view>
+				</view>
+			</mescroll-uni>
+		</view>
+	</view>
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	export default {
+		data() {
+			return {
+				mescroll: '',
+				nchList:[]
+			}
+		},
+		onLoad(e) {
+			//this.initData();
+		},
+		methods: {
+			//活动列表
+			initMescroll(mescroll){
+				this.mescroll = mescroll;
+			},
+			downCallBack(mescroll){
+				this.nchList=[];
+				mescroll.resetUpScroll();
+			},
+			upCallback(mescroll){
+				const url = 'api/ncrb/';
+				var sendData = {
+					action:'nch',
+					mod:'list',
+					loadnum: (mescroll.num-1)*mescroll.size,
+					tpp: mescroll.size,
+					type:7
+				}
+				this.request.get(url, sendData,mescroll).then(res => {
+					if(res.code == 200){
+						if(res.data.length > 0){
+							var subscribeText = '';
+							for(var i = 0;i<res.data.length;i++){
+								if(res.data[i].subscribe == 0){
+									res.data[i].subscribeText = '+关注';
+								}else{
+									res.data[i].subscribeText = '已关注';
+								}
+							}
+						}
+						this.nchList = this.nchList.concat(res.data);
+						this.nchList = this.util.unique(this.nchList,"id");
+						
+					}
+				});
+			},
+			//关注操作
+			releaseOperation(id,index){
+				if(this.request.alreadyLogin()){
+					const url = 'api/ncrb/';
+					let data = {
+						action: 'nch',
+						mod: 'subscribe',
+						id: id,
+					};
+					console.log("操作参数: " + JSON.stringify(data));
+					this.request.get(url,data).then(res=>{
+						if(res.code==200){
+							let result = '';
+							this.nchList[index].subscribe = res.data.subscribe;
+							if(res.data.subscribe == 1){
+								this.nchList[index].subscribeText = '已关注';
+								this.request.toastTips("关注成功");
+							}else{
+								this.nchList[index].subscribeText = '+关注';
+								this.request.toastTips("取消成功");
+							}
+							//this.initData();
+						}
+					})
+				}
+			},
+			goBack(){
+				uni.navigateBack({
+				})
+			},
+			goSearch(){
+				uni.navigateTo({
+					url:'/pages/search/search'
+				})
+			},
+			//详情页
+			jumpDetail(id){
+				uni.navigateTo({
+					url:'/pages/nanchang/details?id='+id
+				})
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import "../../common/css/common.scss";
+	@import "../../common/css/other.scss";
+	page{
+		background-color: #f9fafb;
+	}
+	.subrequirement .cellbox .inner .panel{
+		padding-bottom:50rpx;
+		margin-bottom:30rpx;
+	}
+</style>

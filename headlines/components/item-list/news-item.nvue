@@ -1,0 +1,172 @@
+<template>
+	
+	<view class="list-original list"   @click="click">
+		<view class="left" :style="newsItem.desc?'':'height: 140rpx'">
+			<text class="title">{{newsItem.title}}</text>
+			<text class="list-original-con" v-if="newsItem.desc">{{newsItem.desc}}</text>
+			<view class="tagbox">
+				<text class="label" style="color: #FFFFFF; background-color: #DF0000;" v-if="newsItem.tag && newsItem.tag.indexOf('头条') >=0">{{newsItem.tag}}</text>
+				<text class="label" v-else-if="newsItem.tag">{{newsItem.tag}}</text>
+				<text class="source" v-if="newsItem.from">{{newsItem.from}}</text>
+				<text class="source" v-if="newsItem.datetime">{{newsItem.datetime}}</text>
+			</view>
+		</view>
+		<view class="imgbox" v-if="newsItem.pic">
+			<image class="img" :src="newsItem.pic"></image>
+		</view>
+	</view> 
+	
+</template>
+
+
+<script>
+	export default {
+		props: {
+			newsItem: {
+				type: Object,
+				default: function(e) {
+					return {}
+				}
+			}
+		},
+		created() {
+			if(this.newsItem.desc){
+				this.newsItem.desc =this.newsItem.desc.replace(/\&nbsp;/g,'');
+			}
+		},
+		methods: {
+			click() {
+				this.$emit('click');
+			},
+			close(e) {
+				e.stopPropagation();
+				this.$emit('close');
+			}
+		}
+	}
+</script>
+
+<style>
+	.list {
+		padding: 35rpx 32rpx;
+		position: relative;
+		align-items: flex-start;
+	}
+
+	.list1 {
+		padding: 35rpx 32rpx;
+		position: relative;
+		align-items: flex-start;
+	}
+
+	.title {
+		font-size: 34rpx;
+		line-height: 40rpx;
+		font-weight: bold;
+		margin-bottom: 14rpx;
+		font-size: 32rpx;
+		line-height: 50rpx;
+		lines: 2;
+		text-overflow: ellipsis;
+	}
+
+	.tagbox {
+		/* position: absolute;
+		left: 0;
+		bottom: 0; */
+		flex-direction: row;
+		
+	}
+
+	.label {
+		flex-direction: row;
+		font-size: 20rpx;
+		color: #DF0000;
+		background-color: #FFFFFF;
+		padding: 2rpx 5rpx;
+		margin-right: 18rpx;
+		border-radius: 5rpx;
+		border-style: solid;
+		border-color: #DF0000;
+		border-width: 1rpx;
+	}
+
+	.source {
+		color: #AAB0BB;
+		font-size: 24rpx;
+		margin-right: 20rpx;
+	}
+
+	.sub-list {
+		margin-bottom: 32rpx;
+	}
+
+	.sub-title {
+		font-size: 26rpx;
+		position: relative;
+		font-weight: bold;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.sub-source {
+		font-size: 18rpx;
+		color: #AAB0BB;
+		padding-left: 26rpx;
+	}
+
+	.list-original {
+		
+		flex-direction: row;
+		border-bottom-color: #ebebeb;
+		border-bottom-width: 1rpx;
+	}
+
+	.left {
+		flex: 1;
+		flex-direction: column;
+		justify-content: space-between;
+		/* position: relative; */
+	}
+
+
+	.imgbox-left {
+		width: 170rpx;
+		height: 170rpx;
+	}
+
+	.imgbox {
+		width: 170rpx;
+		height: 170rpx;
+		margin-left: 30rpx;
+	}
+
+
+	.img {
+		width: 170rpx;
+		height: 170rpx;
+	}
+
+	.list-original-con {
+		color: #464646;
+		font-size: 24rpx;
+		margin-bottom: 20rpx;
+		lines: 2;
+		text-overflow: ellipsis;
+	}
+
+	.tagbox {
+		flex-direction: row;
+		margin-bottom: 0;
+		align-items: center;
+	}
+
+	.media-item-line {
+		position: absolute;
+		left: 0upx;
+		right: 0upx;
+		bottom: 0;
+		height: 1upx;
+		background-color: #ebebeb;
+	}
+</style>

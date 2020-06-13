@@ -1,0 +1,119 @@
+<template>
+	<view class="videolist" @click="click">
+		<view class="inner">
+			<view class="picbox">
+				<image class="pic" mode="aspectFill" :src="newsItem.pic"></image>
+			</view>
+			<text class="video-title">{{newsItem.title}}</text>
+			<view class="bt-bar">
+				<text class="videolist-txt">{{newsItem.pv}}</text>
+				<view class="videolist-txt">
+					<view class="videolist-iconbox">
+						<image class="videolist-icon" src="/static/img/common/d_pl@3x.png"></image>
+						<text class="videolist-txt">评论</text>
+					</view>
+				</view>
+			</view>
+		</view>
+		<view class="media-item-line" style="position: absolute;"></view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			newsItem: {
+				type: Object,
+				default: function(e) {
+					return {}
+				}
+			}
+		},
+		created() {
+			// console.log(ewsItem: " + JSON.stringify(this.newsItem));
+		},
+		methods: {
+			click() {
+				this.$emit('click');
+			},
+			close(e) {
+				e.stopPropagation();
+				this.$emit('close');
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	.videolist {
+		margin-top: 30upx;
+		padding: 0upx 30upx;
+	}
+
+
+	.video {
+		width: 690upx;
+		height: 389upx;
+	}
+
+	.video-title {
+		margin-bottom: 30upx;
+		font-size: 30rpx;
+	}
+
+	.bt-bar {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding-bottom: 20rpx;
+	}
+
+	.videolist-txt {
+		flex-direction: row;
+		align-items: center;
+		color: #9f9f9f;
+		font-size: 24rpx;
+	}
+
+	.videolist-iconbox {
+		flex-direction: row;
+		margin-left: 30rpx;
+		align-items: center;
+	}
+
+	.videolist-icon {
+		width: 30upx;
+		height: 30upx;
+		margin-right: 5upx;
+		margin-top: -5upx;
+	}
+
+	.picbox {
+		height: 392rpx;
+		background-color: #f3f5f7;
+		margin-bottom: 20rpx;
+	}
+
+	.pic {
+		width: 690rpx;
+		height: 392rpx;
+	}
+
+	.videolist-title {
+		padding: 30rpx 30rpx 0 30rpx;
+	}
+
+	.videolist-title-pic {
+		width: 133rpx;
+		height: 32rpx;
+	}
+
+	.media-item-line {
+		position: absolute;
+		left: 0upx;
+		right: 0upx;
+		bottom: 0;
+		height: 1upx;
+		background-color: #ebebeb;
+	}
+</style>

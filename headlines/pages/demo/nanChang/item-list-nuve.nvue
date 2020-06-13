@@ -1,0 +1,62 @@
+<template>
+	<view class="list-block list line-bottom">
+		<text class="title">刘奇同志主持召开省委应对疫情工作领导小组会议刘奇同志主持召开省委应对疫情工作领导小组会议刘奇同志主持召开省委应对疫情工作领导小组会议刘奇同志主持召开省委应对疫情工作领导小组会议刘奇同志主持召开省委应对疫情工作领导小组会议</text>
+		<!-- <view class="imgbox-more">
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+		</view> -->
+		<scroll-view class="near-scroll imgbox-more" scroll-x="true">
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+			<image class="img" src="../../../static/img/nanchang/nc_img2@3x.png"></image>
+		</scroll-view>
+			<view class="source">
+				<text class="txt">南昌东湖区发布</text>
+				<text class="txt">1天前</text>
+			</view>
+	</view><!-- 多图列表nvue版结束 -->
+</template>
+
+<script>
+	export default {
+		
+	}
+</script>
+
+<style>
+.list-block{
+	flex-direction: column;
+	padding:24rpx;
+}
+	.title{
+		lines: 2;
+		text-overflow: ellipsis;
+		margin-bottom: 30rpx;
+		font-size: 32rpx;
+	}	
+	.source{
+		flex-direction: row;
+		}
+		.txt{
+			margin-right:100rpx;
+			font-size: 24rpx;
+			color:#AAB0BB;
+		}
+	
+
+.imgbox-more{
+	margin-bottom:24rpx;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	}
+	.img{
+		width:210rpx;
+		height:177rpx;
+		margin-right:30rpx;
+	}
+
+</style>

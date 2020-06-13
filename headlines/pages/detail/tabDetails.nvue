@@ -1,0 +1,494 @@
+<template>
+	<view class="blogger page-news">
+		<view class="listbox">
+			<uni-list class="listview" :enableBackToTop="true" :scroll-y="true" @scrolltolower="loadMore()" @thePageScroll="thePageScroll">
+				<uni-cell>
+					<view class="bgbox" :style="'height:'+bgHeight+'rpx'">
+						<image class="bg" :style="'height:'+bgHeight+'rpx'" :src="tagDetail.pic?tagDetail.pic:'/static/img/home/tab_bg@3x.png'" ></image>
+					</view>
+					<view id="header" class="main line-bottom" :style="'margin-top: '+topHeight+'rpx;'">
+						<view class="header">
+							<image class="header-icon" src="../../static/img/common/w_back@3x.png" @click="goback()"></image>
+							<!-- <image class="header-icon" src="../../static/img/common/w_fx@3x.png"></image> -->
+							<text class="titletxt"></text>
+						</view>
+						<view class="user">
+							<text class="user-name">{{tagDetail.tag}}</text>
+							<text class="desc">阅读：{{tagDetail.pv}}</text>
+							<text id="digest" class="desc introduction" v-if="tagDetail.digest">标签简介：{{tagDetail.digest}}</text>
+						</view>
+					</view>
+				</uni-cell>
+				<uni-refresh class="refresh" @refresh="onrefresh" @pullingdown="onpullingdown" :display="refreshing ? 'show' : 'hide'">
+					<div class="refresh-view">
+						<image class="refresh-icon" :src="refreshIcon" :style="{width: (refreshing || pulling) ? 0: '32px'}" :class="{'refresh-icon-active': refreshFlag}"></image>
+						<uni-load-more v-if="refreshing" class="loading-icon" status="loading" :contentText="loadingMoreText"></uni-load-more>
+						<text class="loading-text">{{refreshText}}</text>
+					</div>
+				</uni-refresh>
+				<uni-cell v-for="(item, index) in dataList" :key="item.id">
+					<news-video-item v-if="item.style == 'video'" :newsItem="item" @click="goDetail(item)" v-on:videoPlay="videoPlay"></news-video-item>
+					<news-pics-item v-else-if="item.style == 'pics'" :newsItem="item" @click="goDetail(item)"></news-pics-item>
+					<news-bigpic-item v-else-if="item.style == 'activity' || item.style == 'bigpic'|| item.style == 'h5' || item.style=='h5_bigpic'" :newsItem="item" @click="goDetail(item)"></news-bigpic-item>
+					<news-item v-else :newsItem="item" @click="goDetail(item)"></news-item>
+				</uni-cell>
+				<uni-cell v-if="(isLoading || dataList.length > 4)&&!isNoData">
+					<view class="loading-more">
+						<text class="loading-more-text">{{loadingText}}</text>
+					</view>
+				</uni-cell>
+			</uni-list>
+		</view>
+		<view v-if="scrollFlag" class="status-bar" :style="hasNotchInScreen?'height: 66upx;':''"></view>
+		<view v-if="scrollFlag" class="header1 line-bottom" >
+			<image @click="goback()" class="header-icon" style="width: 40rpx; height: 40rpx;" src="/static/img/common/icon_back.png"></image>
+			<text class="title">{{tagDetail.tag}}</text>
+			<view></view>
+		</view>
+	</view>
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	import api from '@/api/index.js';
+	import uniList from '@/components/uni-list.vue';
+	import uniCell from '@/components/uni-cell.vue';
+	import uniRefresh from '@/components/uni-refresh.vue';
+	import uniLoadMore from '@/components/uni-load-more.vue';
+	import newsItem from '@/components/item-list/news-item.nvue';
+	import newsPicsItem from '@/components/item-list/news-pics-item.nvue';
+	import newsBigpicItem from '@/components/item-list/news-bigpic-item.nvue';
+	import newsVideoItem from '@/components/item-list/news-video-item.nvue';
+	export default {
+		components: {
+			uniList,
+			uniCell,
+			uniRefresh,
+			uniLoadMore,
+			newsItem,
+			newsPicsItem,
+			newsBigpicItem,
+			newsVideoItem
+		},
+		data() {
+			return {
+				dataList: [],
+				tagDetail: {digest:'1'},
+				keyword: '',
+				bgHeight: 280,
+				topHeight: -240,
+				scrollFlag: false,
+				scorllTop: -50,
+				navigateFlag: false,
+				pulling: false,
+				refreshing: false,
+				refreshFlag: false,
+				refreshText: "",
+				isLoading: false,
+				loadingText: '加载中...',
+				isNoData: false,
+				pageNo: 0,
+				loadnum: 0,
+				tpp: 30,
+				angle: 0,
+				currDate: '',
+				weekday: '',
+				requestParams: {
+					action: 'tag'
+				},
+				loadingMoreText: {
+					contentdown: '',
+					contentrefresh: '',
+					contentnomore: ''
+				},
+				hasNotchInScreen: false, //是否是刘海屏
+				refreshIcon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5QTFRFcHBw3Nzct7e39vb2ycnJioqK7e3tpqam29vb////D8oK7wAAAAp0Uk5T////////////ALLMLM8AAABxSURBVHja7JVBDoAgDASrjqj//7CJBi90iyYeOHTPMwmFZrHjYyyFYYUy1bwUZqtJIYVxhf1a6u0R7iUvWsCcrEtwJHp8MwMdvh2amHduiZD3rpWId9+BgPd7Cc2LIkPyqvlQvKxKBJ//Qwq/CacAAwDUv0a0YuKhzgAAAABJRU5ErkJggg==",
+				videoContextList: {},
+				videoContext: ''
+			}
+		},
+		created() {
+			this.pullTimer = null;
+			let _this = this;
+		},
+		onReady() {
+			// #ifdef APP-PLUS
+			this.hasNotchInScreen = plus.navigator.hasNotchInScreen();
+			console.log("是否含有刘海屏==", this.hasNotchInScreen);
+			// #endif
+			this.loadData(true);
+		},
+		onLoad(e) {
+			if (e.tag) {
+				this.tag = e.tag;
+				this.loadData(true);
+			}
+
+		},
+		watch: {
+			tagDetail: function() {
+				this.$nextTick(function() {
+					console.log(this.tagDetail.digest)
+					if (this.tagDetail.digest) {
+						this.computeHeight();
+					}
+				})
+			}
+		},
+		onHide() {
+			if (this.videoContext) {
+				this.videoContext.pause();
+			}
+		},
+		methods: {
+			computeHeight(){
+				let view = uni.createSelectorQuery().in(this).select('#digest');
+				view.boundingClientRect(data => {
+					var digestHeight = data.height;
+					this.bgHeight = 320 + digestHeight * 2;
+					this.topHeight = -260 - digestHeight * 2;
+				}).exec();
+			},
+			thePageScroll(e) {
+				this.scrollFlag = e < this.scorllTop;
+			},
+			loadData(refresh) {
+				let _this = this;
+				if (this.isLoading) {
+					return;
+				}
+				if (refresh) {
+					_this.dataList = [];
+					_this.pageNo = 0;
+					_this.loadnum = 0;
+					_this.requestParams.loadnum = 0;
+					this.isNoData = false;
+				}
+				this.isLoading = true;
+				this.requestParams.tag = this.tag;
+				
+				var url = 'api/ncrb/';
+				api.get(url,_this.requestParams).then(result =>{
+					if(result.code === 200){
+						_this.tagDetail = result.data;
+						const data = _this.tagDetail.list;
+						_this.isNoData = (data.length <= 0);
+						var data_list = [];
+						if (!_this.isNoData) {
+							data_list = data.map((news) => {
+						
+								if (news.style == 'video') {
+									var video = uni.createVideoContext(news.id);
+									_this.videoContextList[news.id] = video;
+								}
+								news.id = news.id;
+								news.datetime = utils.friendlyDate(news.dateline + "000");
+								news.time = utils.formatMinutesTime(news.dateline + "000");
+								return news;
+							});
+						
+							if (refresh) {
+								_this.dataList = data_list;
+							} else {
+								_this.dataList = _this.dataList.concat(data_list);
+								_this.dataList = utils.unique(_this.dataList,"id");
+								
+							}
+							_this.pageNo += 1;
+							_this.loadnum = _this.pageNo * _this.tpp;
+							_this.requestParams.loadnum = _this.loadnum;
+							console.log(_this.pageNo,_this.loadnum,_this.requestParams.loadnum)
+						}
+					}else{
+						if (_this.dataList.length == 0) {
+							_this.isNoData = true;
+						}
+					}
+					_this.isLoading = false;
+					if (refresh) {
+						_this.refreshing = false;
+						_this.refreshFlag = false;
+						_this.refreshText = "已刷新";
+						_this.pulling = false;
+						if (_this.pullTimer) {
+							clearTimeout(_this.pullTimer);
+						}
+						_this.pullTimer = setTimeout(() => {
+							_this.pulling = false;
+						}, 1000);
+					}
+				}).catch(response => {
+					_this.isLoading = false;
+					console.log(response);
+					if (_this.dataList.length == 0) {
+						_this.isNoData = true;
+					}
+				});
+			},
+			loadMore(e) {
+				if (!this.isNoData) {
+					this.loadData();
+				}
+			},
+			clear() {
+				this.dataList = [];
+				this.loadnum = 0;
+				this.pageNo = 0;
+			},
+			goDetail(detail) {
+				if (this.navigateFlag) {
+					return;
+				}
+				this.navigateFlag = true;
+
+				utils.gotoDetail(detail);
+				setTimeout(() => {
+					this.navigateFlag = false;
+				}, 200)
+			},
+			refreshData() {
+				if (this.isLoading) {
+					return;
+				}
+				this.pulling = true;
+				this.refreshing = true;
+				this.refreshText = "正在刷新...";
+				this.loadData(true);
+			},
+			onrefresh(e) {
+				this.refreshData();
+			},
+			search() {
+				this.loadData(true);
+			},
+			clearkeyWord() {
+				this.keyword = '';
+			},
+			goback() {
+				uni.navigateBack({});
+			},
+			onpullingdown(e) {
+				if (this.refreshing) {
+					return;
+				}
+				this.pulling = false;
+				if (Math.abs(e.pullingDistance) > Math.abs(e.viewHeight)) {
+					this.refreshFlag = true;
+					this.refreshText = "释放立即刷新";
+				} else {
+					this.refreshFlag = false;
+					this.refreshText = "下拉可以刷新";
+				}
+			},
+			videoPlay(item) {
+				if (this.videoContext && item.id != this.videoContext.id) {
+					this.videoContext.pause();
+				}
+				var video = this.videoContextList[item.id];
+				this.remarkVideo(video);
+			},
+			remarkVideo(video) {
+				this.videoContext = video;
+			}
+		}
+	}
+</script>
+<style>
+	.page-news {
+		flex: 1;
+		flex-direction: column;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+	}
+
+	.listview {
+		position: fixed;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		/* #ifndef APP-NVUE */
+		display: flex;
+		flex-direction: column;
+		/* #endif */
+	}
+
+	.introduction {
+		lines: 4;
+		text-overflow: ellipsis;
+	}
+
+	.refresh {
+		justify-content: center;
+	}
+
+	.refresh-view {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		width: 750rpx;
+		height: 64px;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.refresh-icon {
+		width: 32px;
+		height: 32px;
+		transition-duration: .5s;
+		transition-property: transform;
+		transform: rotate(0deg);
+		transform-origin: 15px 15px;
+	}
+
+	.refresh-icon-active {
+		transform: rotate(180deg);
+	}
+
+	.loading-icon {
+		width: 28px;
+		height: 28px;
+		margin-right: 5px;
+		color: gray;
+	}
+
+	.loading-text {
+		margin-left: 2px;
+		font-size: 16px;
+		color: #999999;
+	}
+
+	.loading-more {
+		align-items: center;
+		justify-content: center;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		text-align: center;
+	}
+
+	.loading-more-text {
+		font-size: 28upx;
+		color: #999;
+	}
+
+	.blogger {
+		flex-direction: column;
+	}
+
+	.bg {
+		width: 750rpx;
+	}
+
+	.header {
+		flex-direction: row;
+		justify-content: space-between;
+		padding: 30rpx;
+	}
+
+	.header-icon {
+		width: 40rpx;
+		height: 40rpx;
+	}
+
+	.user {
+		flex-direction: column;
+		padding: -30rpx 30rpx 40rpx 30rpx;
+		justify-content: flex-start;
+	}
+
+	.user-name {
+		margin-top: 20rpx;
+		font-size: 30rpx;
+		color: #FFFFFF;
+	}
+
+	.desc {
+		font-size: 24rpx;
+		line-height: 50rpx;
+		margin: 0rpx 10rpx 30rpx 0rpx;
+		color: #FFFFFF;
+	}
+
+	.listbox {
+	}
+
+	.inner {
+		padding: 30rpx;
+	}
+
+	.list-con {
+		font-size: 32rpx;
+		line-height: 45rpx;
+	}
+
+	.time {
+		font-size: 26rpx;
+		color: #474747;
+		margin-bottom: 20rpx;
+	}
+
+	.statistics {
+		justify-content: space-between;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.rightbox {
+		flex: 1;
+		flex-direction: row;
+		justify-content: flex-end;
+	}
+
+	.item {
+		color: #AAB0BB;
+		font-size: 22rpx;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.font22 {
+		font-size: 24rpx;
+		color: #AAB0BB;
+	}
+
+	.icon {
+		width: 30rpx;
+		height: 30rpx;
+		margin-right: 20rpx;
+	}
+
+	.line {
+		height: 38rpx;
+	}
+
+	.header1 {
+		width: 750rpx;
+		padding: 30rpx 20rpx;
+		align-items: flex-start;
+		flex-direction: row;
+		z-index: 100;
+		top: 46rpx;
+		left: 0;
+		position: fixed;
+		background-color: #FFFFFF;
+	}
+	
+	/* 状态栏高度 */
+	.status-bar {
+		height: 46upx;
+		width: 750upx;
+		position: fixed;
+		background-color: #FFFFFF;
+		top: 0;
+		z-index: 3;
+	}
+
+	.title {
+		margin-left: 10rpx;
+	}
+</style>

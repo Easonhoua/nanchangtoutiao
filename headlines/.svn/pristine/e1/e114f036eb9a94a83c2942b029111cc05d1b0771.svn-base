@@ -1,0 +1,763 @@
+<template>
+	<view class="page-news header-tab-con" style="background-color: #FFFFFF;">
+		<view class="status-bar" :style="hasNotchInScreen?'height: 66upx;':''"></view>
+		<view class="header" :style="hasNotchInScreen?'margin-top: 66upx;':''">
+			<view style="width: 255upx;" @click="back">
+				<image class="back" src="/static/img/common/icon_back.png" mode="aspectFit"></image>
+			</view>
+			<image class="logo" src="../../static/img/home/bitmap@3x.png"></image>
+		</view>
+		<uni-list class="listview" :enableBackToTop="true" :scroll-y="true" @scrolltolower="loadMore()">
+			<uni-refresh class="refresh" @refresh="onrefresh" @pullingdown="onpullingdown" :display="refreshing ? 'show' : 'hide'">
+				<div class="refresh-view">
+					<image class="refresh-icon" :src="refreshIcon" :style="{width: (refreshing || pulling) ? 0: '32px'}" :class="{'refresh-icon-active': refreshFlag}"></image>
+					<uni-load-more v-if="refreshing" class="loading-icon" status="loading" :contentText="loadingMoreText"></uni-load-more>
+					<text class="loading-text">{{refreshText}}</text>
+				</div>
+			</uni-refresh>
+			<uni-cell>
+				<news-slidel-item v-if="slidelItem" ref="itemPage" :newsItem="slidelItem" @click="goDetail(item)"></news-slidel-item>
+				<view class="spokesman" @click="toSpokesmanList()">
+					<image class="spokesman-bg" src="/static/img/release/r_bg2.png"></image>
+					<view class="spokesman-userbox">
+						<image class="userlogo userlogo-dw1" src="/static/img/release/r_user1@3x.png"></image>
+						<image class="userlogo userlogo-dw2" src="/static/img/release/r_uder2@3x.png"></image>
+						<image class="userlogo userlogo-dw3" src="/static/img/release/r_more@3x.png"></image>
+					</view>
+				</view>
+			</uni-cell>
+			<uni-cell v-for="(item,index) in dataList" :key="index">
+				<news-affairs-item v-if="item.style == 'lianbo'" :newsItem="item" @click="goDetail(item)"></news-affairs-item>
+				<news-slidel-item v-else-if="item.style == 'slide'" :newsItem="item" @click="goDetail(item)"></news-slidel-item>
+				<news-pics-item v-else-if="item.style == 'pics'" :newsItem="item" @click="goDetail(item)"></news-pics-item>
+				<news-bigpic-item v-else-if="item.style == 'bigpic'|| item.style=='h5_bigpic'" :newsItem="item" :shareFlag="true"
+				 @click="goDetail(item)" @share="clickShare(item)"></news-bigpic-item>
+				<view v-else-if="item.style=='video' " class="videolist">
+					<view class="list">
+						<video class="video" :id="item.id" :src="item.video_url" :poster="item.pic" play-btn-position="center" style="width:690rpx;height:389rpx;"
+						 @play="videoPlay(item)" @pause="videoPause(item)"></video>
+						<!-- <image class="video" :src="item.pic" mode="aspectFill"></image> -->
+						<text class="video-title"> {{item.title}}</text>
+						<view class="bt-bar">
+							<view class="videolist-txt">
+								<text class="label" v-if="item.tag">{{item.tag}}</text>
+								<text class="source" v-if="item.from">{{item.from}}</text>
+								<text class="source" v-if="item.datetime">{{item.datetime}}</text>
+							</view>
+							<view class="videolist-txt">
+								<view class="videolist-iconbox" @click="clickPl(item)">
+									<image class="videolist-icon" src="/static/img/common/l_pl@3x.png"></image>
+									<text class="videolist-txt">评论</text>
+								</view>
+								<view class="videolist-iconbox" @click="clickShare(item)">
+									<image class="videolist-icon" src="/static/img/common/l_fx@3x.png"></image>
+									<text class="videolist-txt">分享</text>
+								</view>
+
+							</view>
+						</view>
+						<view class="media-item-line" style="position: absolute;"></view>
+					</view>
+				</view>
+				<news-item v-else :newsItem="item" @click="goDetail(item)"></news-item>
+			</uni-cell>
+			<uni-cell v-if="(isLoading || dataList.length > 4)&&!isNoData">
+				<view class="loading-more">
+					<text class="loading-more-text">{{loadingText}}</text>
+				</view>
+			</uni-cell>
+		</uni-list>
+		<!-- 分享弹窗 -->
+		<!-- <view v-if="showShareView" class="share-back-view" @click="cancelShare">
+			<view class="share-bottom-view">
+				<view class="share-text" @click.stop="cancelShare">分享到</view>
+				<view class="share-view" @click.stop="cancelShare">
+					<view class="share-item" v-for="(item,index) in shareList" :key="index" @click="shareItemClick(item)">
+						<image class="share-item-image" :src="item.image"></image>
+						<view class="share-text-detail">{{item.title}}</view>
+					</view>
+				</view>
+				<view class="share-cancel-button" @click="cancelShare">取消分享</view>
+			</view>
+		</view> -->
+	</view>
+</template>
+
+<script>
+	//写在事件外边，防止被注销
+	var iTime;
+	import utils from '@/common/js/util.js';
+	import uniList from '@/components/uni-list.vue';
+	import uniCell from '@/components/uni-cell.vue';
+	import uniRefresh from '@/components/uni-refresh.vue';
+	import requests from '@/api/index.js';
+	import newsItem from '@/components/item-list/news-item.nvue';
+	import newsSlidelItem from '@/components/item-list/news-slide-item.vue';
+	import newsAffairsItem from '@/components/item-list/news-affairs-item.vue';
+	import newsVideoItem from '@/components/item-list/news-video-item.nvue';
+	import newsPicsItem from '@/components/item-list/news-pics-item.nvue';
+	import newsBigpicItem from '@/components/item-list/news-bigpic-item.nvue';
+	export default {
+		components: {
+			uniList,
+			uniCell,
+			uniRefresh,
+			newsItem,
+			newsSlidelItem,
+			newsAffairsItem,
+			newsVideoItem,
+			newsPicsItem,
+			newsBigpicItem
+		},
+		data() {
+			return {
+				dataList: [],
+				slidelItem: null,
+				pulling: false,
+				refreshing: false,
+				refreshFlag: false,
+				refreshText: "",
+				isNoData: false,
+				isLoading: false,
+				loadingText: '加载中...',
+				isNoData: false,
+				pageNo: 0,
+				loadnum: 0,
+				tpp: 5,
+				navigateFlag: false,
+				refreshIcon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5QTFRFcHBw3Nzct7e39vb2ycnJioqK7e3tpqam29vb////D8oK7wAAAAp0Uk5T////////////ALLMLM8AAABxSURBVHja7JVBDoAgDASrjqj//7CJBi90iyYeOHTPMwmFZrHjYyyFYYUy1bwUZqtJIYVxhf1a6u0R7iUvWsCcrEtwJHp8MwMdvh2amHduiZD3rpWId9+BgPd7Cc2LIkPyqvlQvKxKBJ//Qwq/CacAAwDUv0a0YuKhzgAAAABJRU5ErkJggg==",
+				videoContextList: {},
+				videoContext: '',
+				videoContext1: '',
+				hasNotchInScreen: false, //是否是刘海屏
+				videoIndex: 0,
+				showShareView: false,
+				shareList: [], //分享服务商列表
+				shareData: {} //要分享的数据
+			};
+		},
+		created() {
+			console.log("进入头条");
+			this.pullTimer = null;
+			let _this = this;
+			this.requestParams = {
+				type: 63,
+				loadnum: _this.loadnum,
+				tpp: _this.tpp
+			};
+		},
+		onReady() {
+			// #ifdef APP-PLUS
+			this.hasNotchInScreen = plus.navigator.hasNotchInScreen();
+			// #endif
+			this.loadData(true);
+		},
+		onLoad() {
+			// this.queryNewsList();
+		},
+		onHide() {
+			clearTimeout(iTime);
+		},
+		methods: {
+			loadData(refresh) {
+				let _this = this;
+				if (this.isLoading) {
+					return;
+				}
+				if (refresh) {
+					_this.dataList = [];
+					_this.pageNo = 0;
+					_this.loadnum = 0;
+					_this.requestParams.loadnum = 0;
+					this.isNoData = false;
+				}
+				this.isLoading = true;
+				this.requestParams.time = new Date().getTime() + '';
+				var startTime = new Date();
+
+				var url = 'api/ncrb/';
+				requests.get(url, _this.requestParams).then(result => {
+					if (result.code === 200) {
+						const data = result.data;
+						_this.isNoData = (data.length <= 0);
+						var data_list = [];
+						if (!_this.isNoData) {
+							data_list = data.map((news, index) => {
+								if (news.style == 'video') {
+									var video = uni.createVideoContext(news.id);
+									_this.videoContextList[news.id] = video;
+								}
+
+								news.datetime = utils.friendlyDate(news.dateline + "000");
+								news.time = utils.formatMinutesTime(news.dateline + "000");
+								return news;
+							});
+
+							var firstData = data_list[0];
+							if (firstData.style == 'slide') {
+								_this.slidelItem = data_list.shift();
+							}
+
+							if (refresh) {
+								_this.dataList = data_list;
+							} else {
+								_this.dataList = _this.dataList.concat(data_list);
+
+							}
+							_this.pageNo += 1;
+							_this.loadnum = _this.pageNo * _this.tpp;
+							_this.requestParams.loadnum = _this.loadnum;
+							// console.log(_this.pageNo, _this.loadnum, _this.requestParams.loadnum)
+						}
+					} else {
+						if (_this.dataList.length == 0) {
+							_this.isNoData = true;
+						}
+					}
+					_this.isLoading = false;
+					if (refresh) {
+						_this.refreshing = false;
+						_this.refreshFlag = false;
+						_this.refreshText = "已刷新";
+						_this.pulling = false;
+						if (_this.pullTimer) {
+							clearTimeout(_this.pullTimer);
+						}
+						_this.pullTimer = setTimeout(() => {
+							_this.pulling = false;
+						}, 1000);
+					}
+				}).catch(response => {
+					_this.isLoading = false;
+					console.log(response);
+					if (_this.dataList.length == 0) {
+						_this.isNoData = true;
+					}
+				});
+			},
+			loadMore(e) {
+				if (!this.isNoData) {
+					this.loadData();
+				}
+			},
+			// 返回上级页面
+			back: function() {
+				uni.navigateBack({})
+			},
+			clear() {},
+			refreshData() {
+				if (this.isLoading) {
+					return;
+				}
+				this.pulling = true;
+				this.refreshing = true;
+				this.refreshText = "正在刷新...";
+				this.loadData(true);
+			},
+			onrefresh(e) {
+				this.refreshData();
+			},
+			onpullingdown(e) {
+				//写在事件内部
+				clearTimeout(iTime);
+				iTime = setTimeout(function() {
+					//需要执行的事件
+					console.log("ccc")
+					if (this.refreshing) {
+						return;
+					}
+					this.pulling = false;
+					if (Math.abs(e.pullingDistance) > Math.abs(e.viewHeight)) {
+						this.refreshFlag = true;
+						this.refreshText = "释放立即刷新";
+					} else {
+						this.refreshFlag = false;
+						this.refreshText = "下拉可以刷新";
+					}
+				}, 3000);
+			},
+			goDetail(detail) {
+				if (this.navigateFlag) {
+					return;
+				}
+				this.navigateFlag = true;
+
+				utils.gotoDetail(detail);
+				setTimeout(() => {
+					this.navigateFlag = false;
+				}, 300)
+			},
+			videoPlay(item) {
+				if (this.videoContext && item.id != this.videoContext.id) {
+					this.videoContext.pause();
+				}
+				var video = this.videoContextList[item.id];
+				this.remarkVideo(video);
+			},
+			remarkVideo(video) {
+				this.videoContext = video;
+			},
+			videoPause: function(index, item) {
+				// this.videoContext = this.videoContextList[index];
+				// console.log("videoPausevideoPausevideoPause");
+			},
+			clickPl(item) {
+				uni.navigateTo({
+					url: '/pages/detail/comment?id=' + item.id
+				})
+			},
+			//分享-显示分享列表
+			clickShare(item) {
+				//console.log("item="+JSON.stringify(item));
+				let data = {}
+				if (item.style == "bigpic" || item.style == "h5_bigpic") {
+					console.log("点击了图片");
+					data = {
+						type: 0,
+						id: item.id,
+						title: item.title,
+						href: item.url,
+						imageUrl: item.pic
+					}
+				} else if (item.style == "video") {
+					console.log("点击了视频");
+					data = {
+						type: 4,
+						id: item.id,
+						title: item.title,
+						imageUrl: item.pic,
+						mediaUrl: item.video_url
+					}
+				}
+				//添加监听事件
+				uni.$emit('showFX', data)
+				const subNvue = uni.getSubNVueById('videoFX');
+				subNvue.show();
+			},
+			toSpokesmanList() {
+				uni.navigateTo({
+					url: '/pages/release/spokesmanList'
+				})
+			}
+		}
+	}
+</script>
+
+
+<style>
+	.page-news {
+		flex: 1;
+		flex-direction: column;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+	}
+
+	.listview {
+		flex: 1;
+		flex-direction: column;
+	}
+
+	.header-tab-con {
+		background-color: #fafafa;
+	}
+
+	.refresh {
+		justify-content: center;
+	}
+
+	.refresh-view {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		width: 750upx;
+		height: 64px;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.label {
+		flex-direction: row;
+		font-size: 20rpx;
+		color: #DF0000;
+		background-color: #FFFFFF;
+		padding: 2rpx 5rpx;
+		margin-right: 18rpx;
+		border-radius: 5rpx;
+		border-style: solid;
+		border-color: #DF0000;
+		border-width: 1rpx;
+	}
+
+	.source {
+		color: #AAB0BB;
+		font-size: 24rpx;
+		margin-right: 20rpx;
+	}
+
+	.refresh-icon {
+		width: 32px;
+		height: 32px;
+		transition-duration: .5s;
+		transition-property: transform;
+		transform: rotate(0deg);
+		transform-origin: 15px 15px;
+	}
+
+	.refresh-icon-active {
+		transform: rotate(180deg);
+	}
+
+	.loading-icon {
+		width: 28px;
+		height: 28px;
+		margin-right: 5px;
+		color: gray;
+	}
+
+	.loading-text {
+		margin-left: 2px;
+		font-size: 16px;
+		color: #999999;
+	}
+
+	.loading-more {
+		align-items: center;
+		justify-content: center;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		text-align: center;
+	}
+
+	.loading-more-text {
+		font-size: 28upx;
+		color: #999;
+	}
+
+	.item {
+		width: 100vw;
+		padding: 30upx;
+		flex-direction: column;
+		justify-content: center;
+		border-bottom-width: 1upx;
+		border-bottom-color: #F5F5F5;
+	}
+
+	.image {
+		width: 690upx;
+		height: 400upx;
+	}
+
+	.text {
+		width: 690upx;
+		background-color: #1CBBB4;
+		font-size: 32upx;
+		color: #000000;
+	}
+
+	.videolist {
+		margin-top: 20upx;
+		padding: 0upx 30upx;
+	}
+
+	.list {
+		// padding-bottom: 30upx;
+		margin-bottom: 30upx;
+		border-bottom-width: 1upx;
+		border-bottom-color: #F5F5F5;
+	}
+
+	.video {
+		width: 690upx;
+		height: 389upx;
+	}
+
+	.video-title {
+		margin-bottom: 30upx;
+	}
+
+	.bt-bar {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding-bottom: 20rpx;
+	}
+
+	.videolist-txt {
+		flex-direction: row;
+		align-items: center;
+		color: #9f9f9f;
+		font-size: 24rpx;
+	}
+
+	.videolist-icon {
+		width: 30upx;
+		height: 30upx;
+		margin-right: 5upx;
+		margin-top: -5upx;
+	}
+
+	.back {
+		width: 40upx;
+		height: 40upx;
+		/* padding-left: 20upx; */
+	}
+
+	.teaser {
+		margin: 30upx;
+		/* box-shadow: 0upx 0upx 10upx 1upx rgba(0, 0, 0, 0.1); */
+		border-style: solid;
+		border-color: #f3f3f3;
+		border-width: 1rpx;
+
+	}
+
+	.title {
+		width: 750upx;
+		height: 50upx;
+		position: relative;
+	}
+
+
+	.icon {
+		width: 187upx;
+		height: 48upx;
+		margin-left: 200upx;
+	}
+
+	.bg {
+		width: 692upx;
+		height: 50upx;
+		position: absolute;
+		left: 0;
+		top: 0;
+		z-index: 0;
+	}
+
+	.inner {
+		width: 750upx;
+		padding: 0 30upx;
+		z-index: 2;
+		align-items: flex-start;
+		color: #ffffff;
+		font-size: 28upx;
+	}
+
+	.left {
+		height: 50upx;
+		color: #ffffff;
+		font-size: 28upx;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.teaser-icon {
+		width: 35upx;
+		height: 21upx;
+		margin-right: 20upx;
+	}
+
+	.teaser-con {
+		padding: 30upx;
+		align-items: center;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
+	.txt {
+		color: #FFFFFF;
+		font-size: 28upx;
+	}
+
+	.video-title {
+		font-size: 17px;
+		margin-bottom: 30upx;
+	}
+
+	.teaser-con-txt {
+		flex: 1;
+		font-size: 28upx;
+	}
+
+	.btn {
+		border-style: solid;
+		border-width: 1upx;
+		border-color: #df0000;
+		border-radius: 30upx;
+		padding: 5upx 30upx;
+		font-size: 12px;
+		color: #df0000;
+	}
+
+
+	/* 状态栏高度 */
+	.status-bar {
+		height: 40upx;
+		/* nvue中不支持var,需要通过js来判断是否含有刘海屏 */
+		/* height: var(--status-bar-height); */
+		width: 750upx;
+		position: fixed;
+		background-color: #FFFFFF;
+		top: 0;
+		z-index: 3;
+	}
+
+	.header {
+		flex-direction: row;
+		margin-top: 40upx;
+		padding: 26upx;
+		justify-content: flex-start;
+		align-items: center;
+	}
+
+	.logo {
+
+		width: 187upx;
+		height: 48upx;
+	}
+
+	.video-title {
+		font-size: 32rpx;
+		margin-top: 30rpx;
+	}
+
+	.videolist-iconbox {
+		flex-direction: row;
+		margin-left: 30rpx;
+		align-items: center;
+	}
+
+	.media-item-line {
+		position: fixed;
+		left: 0upx;
+		right: 0upx;
+		bottom: 0;
+		height: 1upx;
+		background-color: #ebebeb;
+	}
+
+	/* 分享样式 */
+	.share-back-view {
+		position: fixed;
+		left: 0px;
+		right: 0px;
+		top: 0px;
+		bottom: 0px;
+		background-color: rgba(0, 0, 0, 0.4);
+	}
+
+	.share-bottom-view {
+		position: fixed;
+		width: 750upx;
+		bottom: 0upx;
+		background-color: #FFFFFF;
+	}
+
+	.share-text {
+		font-size: 12;
+		color: #FF0000;
+		margin-top: 30rpx;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.share-view {
+		margin-left: 25upx;
+		padding: 60upx 0upx;
+		flex-direction: row;
+		/* 灵活的项目将水平显示(属性规定灵活项目的方向)  */
+		align-items: center;
+		/* 元素位于容器的中心。(属性定义flex子项在flex容器的当前行的侧轴（纵轴）方向上的对齐方式。)) */
+		justify-content: center;
+		/* 项目位于容器的中心(用于设置或检索弹性盒子元素在主轴（横轴）方向上的对齐方式) */
+	}
+
+	.share-item {
+		width: 150upx;
+		height: 150upx;
+	}
+
+	.share-item-image {
+		width: 100upx;
+		height: 100upx;
+		padding: 10upx;
+	}
+
+	.share-text-detail {
+		font-size: 22rpx;
+		color: #000000;
+	}
+
+	.share-cancel-button {
+		border-top-style: solid;
+		border-top-width: 2upx;
+		border-top-color: #F5F5F5;
+		width: 750upx;
+		height: 100upx;
+		line-height: 100upx;
+		font-size: 22upx;
+		color: #000000;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.spokesman {
+		margin-bottom: 10rpx;
+		position: relative;
+		margin-left: 30rpx;
+		margin-right: 30rpx;
+		margin-top: 30rpx;
+	}
+
+	.spokesman-bg {
+		width: 693rpx;
+		height: 156rpx;
+	}
+
+	.spokesman-userbox {
+		width: 693rpx;
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 156rpx;
+		flex-direction: row;
+		justify-content: flex-end;
+	}
+
+	.userlogo {
+		width: 114rpx;
+		height: 114rpx;
+		border-radius: 60rpx;
+	}
+
+	.userlogo-dw1 {
+		width: 114rpx;
+		height: 114rpx;
+		border-radius: 60rpx;
+		position: relative;
+		right: -80rpx;
+		top: 20rpx;
+	}
+
+	.userlogo-dw2 {
+		width: 114rpx;
+		height: 114rpx;
+		border-radius: 60rpx;
+		position: relative;
+		right: -30rpx;
+		top: 20rpx;
+	}
+
+	.userlogo-dw3 {
+		width: 114rpx;
+		height: 114rpx;
+		border-radius: 60rpx;
+		position: relative;
+		right: 30rpx;
+		top: 20rpx;
+	}
+</style>

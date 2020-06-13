@@ -1,0 +1,143 @@
+<template>
+	<view class="list list-original" @click="click">
+		<view class="left" style="height:auto">
+			<view><text class="title">{{newsItem.title}}</text></view>
+			<view>
+				<text class="list-original-con">{{newsItem.desc}}</text>
+			</view>
+			<view class="tagbox">
+				<text class="label">{{newsItem.tag}}</text>
+				<text class="source">{{newsItem.from}} {{newsItem.datetime}}</text>
+			</view>
+		</view>
+		<view class="imgbox" v-if="newsItem.pic">
+			<image class="img" :src="newsItem.pic"></image>
+		</view>
+		 <view class="media-item-line" style="position: absolute;"></view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			newsItem: {
+				type: Object,
+				default: function(e) {
+					return {}
+				}
+			}
+		},
+		methods: {
+			click() {
+				this.$emit('click');
+			},
+			close(e) {
+				e.stopPropagation();
+				this.$emit('close');
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+.list {
+	padding: 35rpx 32rpx;
+	position: relative;
+	align-items: flex-start;
+}
+.title {
+	font-size: 34rpx;
+	line-height:40rpx;
+	font-weight: bold;
+	margin-bottom: 14rpx;
+}
+
+.tagbox {
+	flex-direction: row;
+}
+
+.label {
+	flex-direction: row;
+	font-size: 20rpx;
+	color: #DF0000;
+	background-color: #FFFFFF;
+	padding: 2rpx 5rpx;
+	margin-right: 18rpx;
+	border-radius: 5rpx;
+	border-style: solid;
+	border-color:  #DF0000;
+	border-width: 1rpx;
+}
+
+.source {
+	color: #AAB0BB;
+	font-size: 24rpx;
+}
+
+.sub-list {
+	margin-bottom: 32rpx;
+}
+
+.sub-title {
+	font-size: 26rpx;
+	position: relative;
+	font-weight: bold;
+	flex-direction: row;
+	align-items: center;
+}
+
+.sub-source {
+	font-size: 18rpx;
+	color: #AAB0BB;
+	padding-left: 26rpx;
+}
+
+.list-original {
+	flex-direction: row;
+}
+
+.left {
+	flex: 1;
+	height: 170rpx;
+}
+
+.imgbox {
+	width: 170rpx;
+	height: 170rpx;
+	margin-left: 30rpx;
+}
+
+.img {
+	width: 170rpx;
+	height: 170rpx;
+}
+
+.title {
+	font-size: 32rpx;
+	line-height:50rpx;
+	lines:2;
+	text-overflow:ellipsis;
+}
+
+.list-original-con {
+	color: #464646;
+	font-size: 24rpx;
+	margin-bottom: 20rpx;
+	lines:2;
+	text-overflow:ellipsis;
+}
+
+.tagbox {
+	flex-direction: row;
+	margin-bottom: 0;
+	align-items: center;
+}
+  .media-item-line {
+  	position: absolute;
+  	left: 0upx;
+  	right: 0upx;
+  	bottom: 0;
+  	height: 1upx;
+  	background-color: #ebebeb;
+  }
+</style>

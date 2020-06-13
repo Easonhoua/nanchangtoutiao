@@ -1,0 +1,234 @@
+<template>
+	<view class="list-original" :class="newsItem.desc?'list1':'list'">
+		<view class="imgbox-left" @click="click">
+			<image class="img" :style="newsItem.type == 6?'border-radius: 60rpx;':''" :src="newsItem.logo?newsItem.logo:'/static/img/user/user_logo@3x.png'"></image>
+		</view>
+		<view class="right" @click="click">
+			<view><text class="title">{{newsItem.name}}</text></view>
+			<view>
+				<text class="list-original-con" v-if="newsItem.desc">{{newsItem.desc}}</text>
+			</view>
+		</view>
+		<text class="attention" v-on:click.stop="toFollow(newsItem,index)" v-if="newsItem.subscribe==0">+关注</text>
+		<text class="attention-y" v-on:click.stop="toFollow(newsItem,index)" v-if="newsItem.subscribe==1">已关注</text>
+
+		<view class="media-item-line" style="position: absolute;"></view>
+	</view>
+</template>
+
+<script>
+	import request from "../../api/index.js"
+	export default {
+		props: {
+			newsItem: {
+				type: Object,
+				default: function(e) {
+					return {}
+				}
+			},
+			picPosition: {
+				type: String,
+				default: 'right'
+			},
+		},
+		methods: {
+			click() {
+				// uni.navigateTo({
+				// 	url:'/pages/nanchang/details?id='+this.newsItem.id
+				// })
+				if (this.newsItem.type == 5) {
+					uni.navigateTo({
+						url: '/pages/nanchang/blogger?id=' + this.newsItem.id
+					})
+				} else {
+					uni.navigateTo({
+						url: '/pages/nanchang/details?id=' + this.newsItem.id
+					})
+				}
+
+			},
+			close(e) {
+				e.stopPropagation();
+				this.$emit('close');
+			},
+			//关注
+			toFollow: function(item, index) {
+				if (request.alreadyLogin()) {
+					const url = 'api/ncrb/';
+					let data = {
+						action: 'nch',
+						mod: 'subscribe',
+						id: item.id
+					};
+					var that = this;
+					console.log("操作参数: " + JSON.stringify(data));
+					request.get(url, data).then(res => {
+						if (res.code == 200) {
+							if (res.data.subscribe == 1) {
+								request.toastTips("关注成功");
+							} else {
+								request.toastTips("取消成功");
+							}
+
+							this.newsItem.subscribe = res.data.subscribe;
+						}
+					})
+				}
+			}
+		}
+	}
+</script>
+
+<style>
+	.list {
+		padding: 35rpx 32rpx;
+		position: relative;
+	}
+
+	.list1 {
+		padding: 35rpx 32rpx;
+		position: relative;
+		align-items: flex-start;
+		border-top-color: #ebebeb;
+		border-top-width: 1rpx;
+	}
+
+	.title {
+		font-size: 34rpx;
+		line-height: 40rpx;
+		font-weight: bold;
+		margin-bottom: 14rpx;
+	}
+
+	.tagbox {
+		flex-direction: row;
+	}
+
+	.label {
+		flex-direction: row;
+		font-size: 20rpx;
+		color: #DF0000;
+		background-color: #FFFFFF;
+		padding: 2rpx 5rpx;
+		margin-right: 18rpx;
+		border-radius: 5rpx;
+		border-style: solid;
+		border-color: #DF0000;
+		border-width: 1rpx;
+	}
+
+	.source {
+		color: #AAB0BB;
+		font-size: 24rpx;
+	}
+
+	.sub-list {
+		margin-bottom: 32rpx;
+	}
+
+	.sub-title {
+		font-size: 26rpx;
+		position: relative;
+		font-weight: bold;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.sub-source {
+		font-size: 18rpx;
+		color: #AAB0BB;
+		padding-left: 26rpx;
+	}
+
+	.list-original {
+		flex-direction: row;
+	}
+
+	.left {
+		flex: 1;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+
+	.right {
+		flex: 1;
+		flex-direction: column;
+		justify-content: space-between;
+		margin-left: 20rpx;
+		padding-right: 60rpx;
+	}
+
+	.imgbox-left {
+		width: 110rpx;
+		height: 110rpx;
+	}
+
+	.imgbox {
+		width: 170rpx;
+		height: 170rpx;
+		margin-left: 30rpx;
+	}
+
+
+	.img {
+		width: 110rpx;
+		height: 110rpx;
+	}
+
+	.title {
+		font-size: 32rpx;
+		line-height: 50rpx;
+		lines: 2;
+		text-overflow: ellipsis;
+	}
+
+	.list-original-con {
+		color: #464646;
+		font-size: 24rpx;
+		margin-bottom: 20rpx;
+		lines: 2;
+		text-overflow: ellipsis;
+	}
+
+	.tagbox {
+		flex-direction: row;
+		margin-bottom: 0;
+		align-items: center;
+	}
+
+	.media-item-line {
+		position: absolute;
+		left: 0upx;
+		right: 0upx;
+		bottom: 0;
+		height: 1upx;
+		background-color: #ebebeb;
+	}
+
+	.attention {
+		width:105rpx;
+		right: 0rpx;
+		top: 10rpx;
+		border-style: solid;
+		border-color: #df0000;
+		border-width: 1rpx;
+		color: #df0000;
+		padding: 5rpx 20rpx;
+		font-size: 22rpx;
+		border-radius: 5rpx;
+		text-align: center;
+	}
+
+	.attention-y {
+		width:105rpx;
+		right: 0rpx;
+		top: 10rpx;
+		border-style: solid;
+		border-color: #e3e2e2;
+		border-width: 1rpx;
+		color: #e3e2e2;
+		padding: 5rpx 20rpx;
+		font-size: 22rpx;
+		border-radius: 5rpx;
+	}
+</style>

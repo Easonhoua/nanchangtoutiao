@@ -1,0 +1,133 @@
+<template>
+	<view class="list " @click="click">
+		<view class="left-txt">
+			<view class="source">
+				<view class="user">
+					<image class="source-icon" :src="newsItem.headimgurl?newsItem.headimgurl:'/static/img/home/home_icon3@3x.png'"></image>
+					<view class="username">
+						<text class="source-txt">{{newsItem.nickname}}</text>
+						<text class="username-time">{{newsItem.datetime}}</text>
+					</view>
+				</view>
+				<!-- 	<text class="source-time">{{newsItem.datetime}}</text> -->
+				<text class="re-tag" v-if="newsItem.tag">{{newsItem.tag}}</text>
+			</view>
+			<text class="list-title">{{newsItem.title}}</text>
+		</view>
+		<view class="imgbox" v-if="newsItem.pic">
+			<image class="imgbox-img" :src="newsItem.pic?newsItem.pic:'/static/img/home/gs_img@3x.png'"></image>
+		</view>
+		<view class="media-item-line" style="position: absolute;"></view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			newsItem: {
+				type: Object,
+				default: function(e) {
+					return {}
+				}
+			}
+		},
+		methods: {
+			click() {
+				this.$emit('click');
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+
+	.list {
+		flex: 1;
+		flex-direction: row;
+		padding: 20rpx;
+	}
+
+	.left-txt {
+		flex: 1;
+	}
+
+	.imgbox {
+		width: 170rpx;
+		height: 170rpx;
+		margin-left: 20rpx;
+	}
+
+	.imgbox-img {
+		width: 212rpx;
+		height: 150rpx;
+	}
+
+	.list-title {
+		font-size: 30rpx;
+		lines: 2;
+		text-overflow: ellipsis;
+		height: 100rpx;
+		line-height: 50rpx;
+	}
+
+	.source {
+		flex-direction: row;
+		align-items: center;
+		line-height: 50rpx;
+		margin-bottom: 10rpx;
+	}
+
+	.user {
+		flex-direction: row;
+		align-items: center;
+		margin-left: 15rpx;
+		margin-right: 50rpx;
+	}
+
+	.source-icon {
+		width: 45rpx;
+		height: 45rpx;
+		margin-right: 8rpx;
+		border-top-left-radius: 20rpx;
+		border-top-right-radius: 20rpx;
+		border-bottom-right-radius: 20rpx;
+		border-bottom-left-radius: 20rpx;
+	}
+
+	.source-time {
+		font-size: 24rpx;
+		color: #AAB0BB;
+	}
+
+	.source-txt {
+		font-size: 26rpx;
+		color: #AAB0BB;
+		margin-left: 10rpx;
+		margin-bottom: 5rpx;
+	}
+
+	.username-time {
+		font-size: 20rpx;
+		margin-left: 10rpx;
+		color: #AAB0BB;
+	}
+
+	.media-item-line {
+		position: absolute;
+		left: 0upx;
+		right: 0upx;
+		bottom: 0;
+		height: 1upx;
+		background-color: #ebebeb;
+	}
+
+	.re-tag {
+		border-style: solid;
+		border-color: #ff4444;
+		border-width: 1rpx;
+		border-radius: 5rpx;
+		padding: 2rpx 6rpx;
+		color: #ff4444;
+		font-size: 20rpx;
+	}
+</style>

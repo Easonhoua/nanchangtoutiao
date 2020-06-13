@@ -1,0 +1,161 @@
+<template>
+	<view class="share-back-view1" @click="cancelFs()">
+		<view class="share-bottom-view1">
+			<view class="share-text1" style="margin-top: 30rpx;" @click.stop="wrapperClick()">分享到</view>
+			<view class="share-view1" @click.stop="wrapperClick()">
+				<view class="share-item1" v-for="(item,index) in shareList" :key="index" @click="shareItemClick(item)">
+					<image class="share-item-image1" :src="item.image"></image>
+					<text class="share-text-detail1">{{item.title}}</text>
+				</view>
+			</view>
+			<view class="share-cancel-button1">取消分享</view>
+		</view>
+	</view>
+	
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	export default {
+		data() {
+			return {
+				shareList: [],
+				webUrl:'',
+				webTitle:'',
+				webPic:''
+			}
+		},
+		onLoad() {
+			this.clickShare();
+		},
+		onShow(){
+			//监听事件
+			uni.$on('showFX', (data) => {  
+				console.log("data="+JSON.stringify(data));
+			    this.webUrl = data.webUrl;  
+			    this.webTitle = data.webTitle;  
+				this.webPic = data.webPic
+			}) 
+		},
+		onUnload() {  
+			// 移除监听事件  
+			uni.$off('showFX');  
+		},
+		methods: {
+			wrapperClick(){
+				console.log("阻止了隐藏事件");
+			},
+			//获取分享列表
+			clickShare(){
+				var self = this;
+				self.shareList = [];//置空一次
+				self.shareList = utils.getShareList();
+			},
+			//分享-取消分享
+			cancelFs(){
+				const subNvue = uni.getSubNVueById('fenxiang');
+				subNvue.hide()
+			},
+			shareItemClick(item){
+				this.cancelFs();//分享成功后，执行一次，隐藏弹窗
+				let detail = {
+					title: this.webTitle,
+					link : this.webUrl,
+					pic : this.webPic
+				}
+				console.log("detail:"+JSON.stringify(detail));
+				if(!detail.link){
+					uni.showToast({
+						title: '复制失败，分享url不不能为空',
+						icon: 'none',
+						duration: 1500
+					});
+					return false;
+				}
+				//判断点击的是复制链接还是其它
+				if(item.provider === 'copyLink'){
+					//console.log("点击了复制链接");
+					uni.setClipboardData({
+						data:detail.link,
+						success() {
+							console.log("复制成功")
+						}
+					})
+				}else{
+					//console.log("点击了其它");
+					utils.clickShareItem(item,detail);//调用分享接口
+				}
+				//this.addShareNum();
+			},
+			//分享次数加1
+			// addShareNum(){
+			// 	const url = 'api/ncrb/';
+			// 	var sendData = {
+			// 		id:this.id,
+			// 		mod:'share',
+			// 		action:'view'
+			// 	}
+			// 	this.request.post(url, sendData).then(res => {
+			// 		//console.log("res.code: " + JSON.stringify(res.code));
+			// 	});
+			// }
+		}
+	}
+</script>
+
+<style>
+	.share-back-view1{
+		position: fixed;
+		left: 0px;
+		right: 0px;
+		top: 0px;
+		bottom: 0px;
+		background-color: rgba(0, 0, 0, 0.4); 
+	}
+	.share-bottom-view1{
+		position: fixed;
+		width: 750upx;
+		bottom: 0upx;
+		background-color: #FFFFFF;
+	}
+	.share-text1{
+		font-size: 12;
+		color: #FF0000;
+		margin-top: 30rpx;
+		align-items: center;
+		justify-content: center;
+	}
+	.share-view1{
+		margin-left: 25upx;
+		padding: 60upx 0upx ;
+		flex-direction: row; /* 灵活的项目将水平显示(属性规定灵活项目的方向)  */
+		align-items: center; /* 元素位于容器的中心。(属性定义flex子项在flex容器的当前行的侧轴（纵轴）方向上的对齐方式。)) */
+		justify-content: center; /* 项目位于容器的中心(用于设置或检索弹性盒子元素在主轴（横轴）方向上的对齐方式) */
+	}
+	.share-item1{
+		width: 150upx;
+		height: 150upx;
+		align-items: center;
+	}
+	.share-item-image1{
+		width: 100upx;
+		height: 100upx;
+		padding: 10upx;
+	}
+	.share-text-detail1{
+		font-size: 28rpx;
+		color: #000000;
+	}
+	.share-cancel-button1{
+		border-top-style: solid;
+		border-top-width: 2upx;
+		border-top-color: #F5F5F5;
+		width: 750upx;
+		height: 100upx;
+		line-height: 100upx;
+		font-size: 22upx;
+		color: #000000;
+		align-items: center;
+		justify-content: center;
+	}
+</style>

@@ -1,0 +1,226 @@
+<template>
+	<view class="page user">
+		<view class="top">
+			<view class="navi-bar"></view>
+			<image class="bg" src="/static/img/user/user_bg@3x.png"></image>
+			<view class="main-icon">
+				<view class="panel" style="margin-top: -300rpx;">
+					<view class="userbox">
+						<view class="user-logo" @click="gotoUserInfo">
+							<view class="loginbar">
+								<image class="logo" :src="userData.headimgurl"></image>
+								<text class="txt">{{userData.nickname}}</text>
+								<image class="icon" src="/static/img/user/user_arrow_r@3x.png"></image>
+							</view>
+						</view>
+						<!-- <view class="signin">
+							<image class="icon2" src="/static/img/user/user_qd_icon@3x.png"></image>
+							<text>积分签到</text>
+							<image class="icon1" src="/static/img/user/user_arrow_r2@3x.png"></image>
+						</view> -->
+					</view>
+					<view class="top-iconbox">
+						<view class="item" v-for="(item,index) in functionList" :key="index"  @click="loginCellClick(item)">
+							<view class="iconbox">
+								<image class="icon" :src="item.icon"></image>
+							</view>
+							<text class="txt">{{item.text}}</text>
+						</view>
+					</view>
+				</view>
+				<view class="panel service">
+					<view class="title">服务</view>
+					<view class="top-iconbox">
+						<view class="item" v-for="(item,index) in serviceList" :key="index" @click="serviceClick(item)">
+							<view class="iconbox">
+								<image class="icon" :src="item.pic"></image>
+							</view>
+							<text class="txt">{{item.title}}</text>
+						</view>
+					</view>
+				</view>
+				<view class="listbox">
+					<view class="list" v-for="(item,index) in cellList" :key="index" @click="listCellClick(item)">
+						<image class="icon" :src="item.icon"></image>
+						<text class="txt">{{item.text}}</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				userData:{
+					nickname:"",
+					headimgurl:""
+				},
+				functionList:[],
+				serviceList:[],
+				cellList:[]
+			}
+		},
+		onShow() {
+			this.userData = uni.getStorageSync("user");
+			console.log("this.userData = ",this.userData);
+			if (!this.userData.id) {
+				this.request.removeStorage();
+				this.userData = {
+					headimgurl: "/static/img/home/home_icon5@3x.png",
+					nickname: "登录/注册"
+				};
+			}else{
+				uni.setStorageSync("hasLogin",true);
+			}
+		},
+		onLoad() {
+			this.loadDefaultList();
+			this.loadServiceList();
+		},
+		methods: {
+			loadServiceList(){
+				let url = 'api/ncrb/';
+				let sendData = {
+					action: 'fw',
+					loadnum: 0,
+					tpp:30
+				}
+				this.request.get(url,sendData).then(res =>{
+					if(res.code == 200){
+						this.serviceList  = res.data;
+					}else{
+						this.request.toastTips("获取服务列表失败");
+					}
+				})
+			},
+			// 加载默认列表
+			loadDefaultList:function(){
+				this.functionList = [
+					{
+						"url":"/pages/user/userIndex/message",
+						"icon":"/static/img/user/user_icon1@3x.png",
+						"text":"消息"
+					},
+					{
+						"url":"/pages/user/userIndex/myCollection",
+						"icon":"/static/img/user/user_icon2@3x.png",
+						"text":"收藏"
+					},
+					{
+						"url":"/pages/user/userIndex/comment",
+						"icon":"/static/img/user/user_icon3@3x.png",
+						"text":"评论"
+					},
+					{
+						"url":"/pages/user/userIndex/myPreview",
+						"icon":"/static/img/user/user_icon4@3x.png",
+						"text":"历史"
+					},
+					{
+						"url":"/pages/user/userIndex/myFollow",
+						"icon":"/static/img/user/user_icon5@3x.png",
+						"text":"关注"
+					},
+					
+					{
+						"url":"/pages/user/userIndex/myGoodInfo",
+						"icon":"/static/img/user/user_icon7@3x.png",
+						"text":"点赞"
+					},
+					{
+						"url":"/pages/inquire/complaintSuggestionMessage",
+						"icon":"/static/img/user/user_icon8@3x.png",
+						"text":"意见"
+					},
+					{
+						"url":"/pages/user/setting/help",
+						"icon":"/static/img/user/user_icon6@3x.png",
+						"text":"帮助"
+					}
+				];
+				
+				this.cellList = [
+					// {
+					// 	"url":"/pages/news/topic?zid=80",
+					// 	"icon":"/static/img/user/user_list_icon4@3x.png",
+					// 	"text":"推荐给朋友"
+					// },
+					{
+						"url":"/pages/user/setting/about",
+						"icon":"/static/img/user/user_list_icon2@3x.png",
+						"text":"关于我们"
+					},
+					{
+						"url":"/pages/webView/webView?webUrl=yhxy&webTitle=用户协议",
+						"icon":"/static/img/user/yhxy.png",
+						"text":"用户协议"
+					},
+					{
+						"url":"/pages/webView/webView?webUrl=yszc&webTitle=隐私政策",
+						"icon":"/static/img/user/yszc.png",
+						"text":"隐私政策"
+					},
+					{
+						"url":"/pages/user/setting/versionUpdate",
+						"icon":"/static/img/user/jcbb.png",
+						"text":"检测新版本"
+					},
+					{
+						"url":"/pages/user/setting/setup",
+						"icon":"/static/img/user/qchc.png",
+						"text":"清除缓存"
+					}
+				]
+			},
+			// 下拉刷新
+			onPullDownRefresh:function() {
+				this.request.getUserInfo().then(res=>{
+					uni.stopPullDownRefresh()
+				})
+			},
+			// 进入个人信息页面
+			gotoUserInfo:function(){
+				if(this.request.alreadyLogin()){
+					uni.navigateTo({
+						url:"/pages/user/userInfo/userInfo"
+					})
+				}
+			},
+			loginCellClick(item){
+				if (this.request.alreadyLogin()&&item.url) {
+					uni.navigateTo({
+						url: item.url
+					})
+				}
+			},
+			listCellClick: function(item) {
+				uni.navigateTo({
+					url: item.url
+				})
+				// if (this.request.alreadyLogin()&&item.url) {
+				// 	uni.navigateTo({
+				// 		url: item.url
+				// 	})
+				// }
+			},
+			serviceClick(item){
+				if(item.url.indexOf("unionid={unionid}") >=0){
+					if(this.request.alreadyLogin()){
+						item.url = item.url.replace(/{unionid}/,uni.getStorageSync("unionid"));
+						this.util.gotoWebView(item.url,item.title);
+					}
+				}else{
+					this.util.gotoWebView(item.url,item.title);
+				}
+				
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import "../../common/css/other.scss";
+</style>

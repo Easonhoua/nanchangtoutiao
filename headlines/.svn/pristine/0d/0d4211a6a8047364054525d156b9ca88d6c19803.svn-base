@@ -1,0 +1,524 @@
+{
+	"pages": [{
+			"path": "pages/index/startup",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/index/launchGuide",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/user/login/login",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		/***********************我的模块********************************/
+		{
+			"path": "pages/user/userIndex/myCollection",
+			"style": {
+				"navigationBarTitleText": "我的收藏",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/user/userIndex/myGoodInfo",
+			"style": {
+				"navigationBarTitleText": "点赞",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/user/userIndex/myFollow",
+			"style": {
+				"navigationBarTitleText": "关注列表",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/user/userIndex/myPreview",
+			"style": {
+				"navigationBarTitleText": "浏览历史",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		}, {
+			"path": "pages/user/userIndex/comment",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		}, {
+			"path": "pages/user/userIndex/message",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		}, {
+			"path": "pages/user/userIndex/messageDetail",
+			"style": {
+				"navigationBarTitleText": "消息详情",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		/***********************政务模块********************************/
+		{
+			"path": "pages/demo/index",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/news/index",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false, //禁用原生导航栏
+					"subNVues": [{
+						"id": "userDealPrivacy",
+						"path": "pages/index/userDealPrivacy",
+						"type": "popup",
+						"style": {
+							"position": "absolute",
+							"margin": "auto",
+							"width": "100%",
+							"height": "100%",
+							"background": "transparent"
+						}
+					}, {
+						"id": "versionUpdateTip",
+						"path": "pages/index/versionUpdateTip",
+						"type": "popup",
+						"style": {
+							"position": "absolute",
+							"margin": "auto",
+							"width": "100%",
+							"height": "100%",
+							"background": "transparent"
+						}
+					}]
+				}
+			}
+		},
+		{
+			"path": "pages/news/transfer",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/readNewspaper/readNewspaper",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/search/search",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/search/searchList",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/detail/details",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/detail/explainDetails",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/detail/tabDetails",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/detail/comment",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/inquire/inquireDetails",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/inquire/thoughtDiscussList",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/inquire/governmentEnterprisesDialogue",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/inquire/inquireList",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/inquire/retrievalList",
+			"style": {
+				"navigationBarTitleText": "文件检索",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": {
+						"titleColor": "#2B588D",
+						"buttons": [{
+							"text": "\ue7b5",
+							"fontSrc": "/static/iconfont/iconfont.ttf",
+							"fontSize": "20px",
+							"float": "right",
+							"width": "40px",
+							"color": "#2B588D"
+						}]
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/inquire/typicalCaseList",
+			"style": {
+				"navigationBarTitleText": "典型案例",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": {
+						"titleColor": "#2B588D"
+					}
+				}
+			}
+		},
+		{
+			"path": "pages/news/newsList",
+			"style": {
+				"navigationBarTitleText": "政经周刊",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/news/topic",
+			"style": {
+				"navigationBarTitleText": "专题",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/inquire/replyMessage",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/inquire/complaintSuggestionMessage",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/inquire/details",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/nanchang/nanchang",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		},
+		{
+			"path": "pages/nanchang/blogger",
+			"style": {
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		}, {
+			"path": "pages/activity/activity",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTextStyle": "black"
+			}
+		}, {
+			"path": "pages/activity/activityDetails",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTextStyle": "black"
+			}
+		}, {
+			"path": "pages/user/user",
+			"style": {
+				"transparentTitle": "always"
+			}
+		}, {
+			"path": "pages/release/release",
+			"style": {
+				// "navigationStyle": "custom",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false ,//禁用原生导航栏
+					"subNVues": [{
+						"id": "videoFX",
+						"path": "pages/release/subNVue/videoFX",
+						"type": "popup",
+						"style": {
+							"position": "absolute",
+							"margin": "auto",
+							"width": "100%",
+							"height": "100%",
+							"background": "transparent"
+						}
+					}]
+				}
+			}
+		}, {
+			"path": "pages/release/spokesmanList",
+			"style": {
+				// "navigationStyle": "custom",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		}, {
+			"path": "pages/bigdata/leaderList",
+			"style": {
+				// "navigationStyle": "custom",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		}, {
+			"path": "pages/nanchang/details",
+			"style": {
+				// "navigationStyle": "custom",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		}, {
+			"path": "pages/nanchang/entrepreneur",
+			"style": {
+				// "navigationStyle": "custom",
+				"navigationBarTextStyle": "black",
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				}
+			}
+		}, {
+			"path": "pages/user/userInfo/userInfo",
+			"style": {
+				"navigationBarTitleText": "个人资料"
+			}
+		},
+		{
+			"path": "pages/user/setting/help",
+			"style": {
+				"navigationBarTitleText": "帮助中心",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/user/setting/about",
+			"style": {
+				"navigationBarTitleText": "关于我们",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/user/setting/versionUpdate",
+			"style": {
+				"navigationBarTitleText": "版本更新",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/user/setting/setup",
+			"style": {
+				"navigationBarTitleText": "清除缓存",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/webView/webView",
+			"style": {
+				"app-plus": {
+					"titleNView": false ,//禁用原生导航栏
+					"subNVues": [{
+						"id": "fenxiang",
+						"path": "pages/webView/subNVue/fenxiang",
+						"type": "popup",
+						"style": {
+							"position": "absolute",
+							"margin": "auto",
+							"width": "100%",
+							"height": "100%",
+							"background": "transparent"
+						}
+					}]
+				},
+				"navigationBarTextStyle": "black"
+			}
+		},{
+			"path": "pages/user/bindingWX/bindingWX",
+			"style": {
+				"navigationBarTitleText": "绑定微信"
+			}
+		}, {
+			"path": "pages/demo/nanChang/nanChang",
+			"style": {}
+		}, {
+			"path": "pages/user/userInfo/userRealname",
+			"style": {
+				"navigationBarTitleText": "修改真实姓名"
+			}
+		}, {
+			"path": "pages/user/userInfo/userMobile",
+			"style": {
+				"navigationBarTitleText": "修改手机号"
+			}
+		}, {
+			"path": "pages/user/userInfo/userCompany",
+			"style": {
+				"navigationBarTitleText": "修改单位"
+			}
+		}
+    ],
+	"tabBar": {
+		"color": "#2A2835",
+		"selectedColor": "#264980",
+		"backgroundColor": "#ffffff",
+		"borderStyle": "white",
+		"fontSize": "12px",
+		"list": [{
+			"pagePath": "pages/news/index",
+			"text": "政务",
+			"iconPath": "static/tab/home_nor@3x.png",
+			"selectedIconPath": "static/tab/home_pre@3x.png"
+		}, {
+			"pagePath": "pages/nanchang/nanchang",
+			"text": "南昌号",
+			"iconPath": "static/tab/nanchang_nor@3x.png",
+			"selectedIconPath": "static/tab/nanchang_pre@3x.png"
+		}, {
+			"pagePath": "pages/activity/activity",
+			"text": "找活动",
+			"iconPath": "static/tab/activity_nor@3x.png",
+			"selectedIconPath": "static/tab/activity_pre@3x.png"
+		}, {
+			"pagePath": "pages/user/user",
+			"text": "我的",
+			"iconPath": "static/tab/user_nor@3x.png",
+			"selectedIconPath": "static/tab/user_pre@3x.png"
+		}],
+		"midButton": {
+			"width": "60px",
+			"height": "60px",
+			"iconPath": "static/tab/release_pre@3x.png",
+			"text": "发布厅",
+			"iconWidth": "40px"
+		}
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "",
+		"navigationBarBackgroundColor": "#264980",
+		"backgroundColor": "#FFFFFF"
+	}
+
+}

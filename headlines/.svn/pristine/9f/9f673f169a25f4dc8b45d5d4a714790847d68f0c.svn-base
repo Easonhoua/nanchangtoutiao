@@ -1,0 +1,487 @@
+<template>
+	<view class="page-news">
+		<view v-if="scrollFlag" class="top-iconbox">
+			<scroll-view show-scrollbar="false" class="imgbox-more" scroll-x="true">
+				<view class="top-icon-item" v-for="(item,index) in subList" :key="index" @click="querySubListByTag(item,index)">
+					<image class="top-icon" :src="subIndex ==index?item.selectedUrl:item.url"></image>
+					<text class="top-icon-txt">{{item.name}}</text>
+				</view>
+			</scroll-view>
+		</view>
+		<!-- @scroll="onPageScrolls()" -->
+		<uni-list ref="uniList" class="listview" :enableBackToTop="true" :scroll-y="true" @scrolltolower="loadMore()" :style="scrollFlag?'margin-top: 150rpx;':''"
+		 @thePageScroll="thePageScroll">
+			<uni-refresh class="refresh" @refresh="onrefresh" @pullingdown="onpullingdown" :display="refreshing ? 'show' : 'hide'">
+				<div class="refresh-view">
+					<image class="refresh-icon" :src="refreshIcon" :style="{width: (refreshing || pulling) ? 0: '32px'}" :class="{'refresh-icon-active': refreshFlag}"></image>
+					<uni-load-more v-if="refreshing" class="loading-icon" status="loading" :contentText="loadingMoreText"></uni-load-more>
+					<text class="loading-text">{{refreshText}}</text>
+				</div>
+			</uni-refresh>
+			<uni-cell v-if="slidelItem" class="top-scroll1">
+				<news-slidel-item class="top-scroll1" ref="itemPage" :newsItem="slidelItem" @click="goDetail(item)"></news-slidel-item>
+			</uni-cell>
+			<uni-cell>
+				<view v-if="!scrollFlag" class="top-iconbox">
+					<scroll-view show-scrollbar="false" class="imgbox-more" scroll-x="true">
+						<view class="top-icon-item" v-for="(item,i) in subList" :key="i" @click="querySubListByTag(item,i)">
+							<image class="top-icon" :src="subIndex ==i?item.selectedUrl:item.url"></image>
+							<text class="top-icon-txt">{{item.name}}</text>
+						</view>
+					</scroll-view>
+				</view>
+			</uni-cell>
+			<uni-cell v-for="(item, index) in dataList" :key="item.id">
+				<!-- <news-nch-item v-if="subIndex == 1 || subIndex ==3" :newsItem="item" @click="goDetail(item)"></news-nch-item> -->
+				<news-video-item v-if="item.style == 'video'" :index="index" :newsItem="item" @click="goDetail(item)"
+				 v-on:videoPlay="videoPlay"></news-video-item>
+				<news-pics-item v-else-if="item.style == 'pics'" :newsItem="item" @click="goDetail(item)"></news-pics-item>
+				<news-bigpic-item v-else-if="item.style == 'bigpic'|| item.style=='h5_bigpic'" :newsItem="item" @click="goDetail(item)"></news-bigpic-item>
+				<news-item v-else :newsItem="item" @click="goDetail(item)"></news-item>
+
+			</uni-cell>
+			<uni-cell v-if="(isLoading || dataList.length > 4)&&!isNoData">
+				<view class="loading-more">
+					<text class="loading-more-text">{{loadingText}}</text>
+				</view>
+			</uni-cell>
+		</uni-list>
+	</view>
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	  import api from '@/api/index.js';
+	import uniList from '@/components/uni-list.vue';
+	import uniCell from '@/components/uni-cell.vue';
+	import uniRefresh from '@/components/uni-refresh.vue';
+	import uniLoadMore from '@/components/uni-load-more.vue';
+	import noData from '@/components/nodata.nvue';
+	import newsItem from '@/components/item-list/news-item.nvue';
+	import newsVideoItem from '@/components/item-list/news-video-item.nvue';
+	import newsPicsItem from '@/components/item-list/news-pics-item.nvue';
+	import newsNchItem from '@/components/item-list/news-nch-item.nvue';
+	import newsSlidelItem from '@/components/item-list/news-slide-item.vue';
+	import newsBigpicItem from '@/components/item-list/news-bigpic-item.nvue';
+	export default {
+		components: {
+			uniList,
+			uniCell,
+			uniRefresh,
+			uniLoadMore,
+			noData,
+			newsItem,
+			newsVideoItem,
+			newsPicsItem,
+			newsNchItem,
+			newsSlidelItem,
+			newsBigpicItem
+		},
+		props: {
+			nid: {
+				type: [Number, String],
+				default: ''
+			}
+		},
+		data() {
+			return {
+				dataList: [],
+				slidelItem: null,
+				subList: [{
+					name: '云上南昌',
+					url: '/static/img/home/dsj_01.png',
+					selectedUrl: '/static/img/home/dsjh_01.png'
+				}, {
+					name: '数字经济',
+					url: '/static/img/home/dsj_03.png',
+					selectedUrl: '/static/img/home/dsjh_03.png'
+				}, {
+					name: '数据观',
+					url: '/static/img/home/dsj_05.png',
+					selectedUrl: '/static/img/home/dsjh_05.png'
+				}, {
+					name: '研究院',
+					url: '/static/img/home/dsj_07.png',
+					selectedUrl: '/static/img/home/dsjh_07.png'
+				}],
+				subIndex: null,
+				tag: '',
+				navigateFlag: false,
+				pulling: false,
+				refreshing: false,
+				refreshFlag: false,
+				refreshText: "",
+				isLoading: false,
+				loadingText: '加载中...',
+				isNoData: false,
+				pageNo: 0,
+				loadnum: 0,
+				tpp: 10,
+				angle: 0,
+				loadingMoreText: {
+					contentdown: '',
+					contentrefresh: '',
+					contentnomore: ''
+				},
+				refreshIcon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5QTFRFcHBw3Nzct7e39vb2ycnJioqK7e3tpqam29vb////D8oK7wAAAAp0Uk5T////////////ALLMLM8AAABxSURBVHja7JVBDoAgDASrjqj//7CJBi90iyYeOHTPMwmFZrHjYyyFYYUy1bwUZqtJIYVxhf1a6u0R7iUvWsCcrEtwJHp8MwMdvh2amHduiZD3rpWId9+BgPd7Cc2LIkPyqvlQvKxKBJ//Qwq/CacAAwDUv0a0YuKhzgAAAABJRU5ErkJggg==",
+				videoContextList: {},
+				videoContext: '',
+				videoIndex: 0,
+				scrollFlag: false,
+				scorllTop: -180
+			}
+		},
+		created() {
+			this.pullTimer = null;
+			let _this = this;
+			console.log(_this.nid);
+			this.requestParams = {
+				type: _this.nid,
+				loadnum: _this.loadnum,
+				tpp: _this.tpp
+			};
+			// #ifdef APP-PLUS
+			this.scorllTop = plus.navigator.hasNotchInScreen() ? -230 : -180;
+			// #endif
+		},
+
+		onHide() {
+			if (this.videoContext) {
+				this.videoContext.pause();
+			}
+		},
+		methods: {
+			thePageScroll(e) {
+				this.scrollFlag = e < this.scorllTop;
+			},
+			loadData(refresh) {
+				let _this = this;
+				if (this.isLoading) {
+					return;
+				}
+				if (refresh) {
+					_this.dataList = [];
+					_this.pageNo = 0;
+					_this.loadnum = 0;
+					_this.requestParams.loadnum = 0;
+					this.isNoData = false;
+				}
+				this.isLoading = true;
+				this.requestParams.tag = this.tag;
+				var sendData = this.requestParams;
+				sendData.time = new Date().getTime() + '';
+				var startTime = new Date();
+				
+				var url = 'api/ncrb/';
+				api.get(url,sendData).then(result =>{
+					if(result.code === 200){
+						const data = result.data;
+						_this.isNoData = (data.length <= 0);
+						var data_list = [];
+						if (!_this.isNoData) {
+							data_list = data.map((news, index) => {
+								if (news.style == 'video' || index == 0 || index == 1) {
+									var video = uni.createVideoContext(news.id);
+									_this.videoContextList[news.id] = video;
+								}
+						
+								news.datetime = utils.friendlyDate(news.dateline + "000");
+								news.time = utils.formatMinutesTime(news.dateline + "000");
+								return news;
+							});
+							var firstData = data_list[0];
+							if (firstData.style == 'slide') {
+								_this.slidelItem = null;
+								_this.slidelItem = data_list.shift();
+							}
+							if (refresh) {
+								_this.dataList = data_list;
+							} else {
+								_this.dataList = _this.dataList.concat(data_list);
+								_this.dataList = utils.unique(_this.dataList,"id");
+							}
+							_this.pageNo += 1;
+							_this.loadnum = _this.pageNo * _this.tpp;
+							_this.requestParams.loadnum = _this.loadnum;
+							console.log(_this.pageNo, _this.loadnum, _this.requestParams.loadnum)
+						}
+					}else{
+						if (_this.dataList.length == 0) {
+							_this.isNoData = true;
+						}
+					}
+					_this.isLoading = false;
+					if (refresh) {
+						_this.refreshing = false;
+						_this.refreshFlag = false;
+						_this.refreshText = "已刷新";
+						_this.pulling = false;
+						if (_this.pullTimer) {
+							clearTimeout(_this.pullTimer);
+						}
+						_this.pullTimer = setTimeout(() => {
+							_this.pulling = false;
+						}, 1000);
+					}
+				}).catch(response => {
+					_this.isLoading = false;
+					console.log(response);
+					if (_this.dataList.length == 0) {
+						_this.isNoData = true;
+					}
+				});
+			},
+			loadMore(e) {
+				if (!this.isNoData) {
+					this.loadData();
+				}
+			},
+			clear() {
+				this.dataList = [];
+				this.loadnum = 0;
+				this.pageNo = 0;
+			},
+			goDetail(detail) {
+				if (this.navigateFlag) {
+					return;
+				}
+				this.navigateFlag = true;
+
+				utils.gotoDetail(detail);
+				setTimeout(() => {
+					this.navigateFlag = false;
+				}, 200)
+			},
+			refreshData() {
+				if (this.isLoading) {
+					return;
+				}
+				this.pulling = true;
+				this.refreshing = true;
+				this.refreshText = "正在刷新...";
+				this.loadData(true);
+			},
+			onrefresh(e) {
+				this.refreshData();
+			},
+			onpullingdown(e) {
+				if (this.refreshing) {
+					return;
+				}
+
+				this.pulling = false;
+				if (Math.abs(e.pullingDistance) > Math.abs(e.viewHeight)) {
+					this.refreshFlag = true;
+					this.refreshText = "释放立即刷新";
+				} else {
+					this.refreshFlag = false;
+					this.refreshText = "下拉可以刷新";
+				}
+			},
+			newGuid() {
+				let s4 = function() {
+					return (65536 * (1 + Math.random()) | 0).toString(16).substring(1);
+				}
+				return (s4() + s4() + "-" + s4() + "-4" + s4().substr(0, 3) + "-" + s4() + "-" + s4() + s4() + s4()).toUpperCase();
+			},
+			querySubListByTag(tag, i) {
+				if (i == 1) {
+					uni.navigateTo({
+						url: '/pages/bigdata/leaderList'
+					})
+				} else {
+					this.scrollFlag = false;
+					this.scorllTop = 0;
+					if(this.subIndex == i){
+						this.tag = "";
+						this.subIndex = null;
+					}else{
+						this.tag = tag.name;
+						this.subIndex = i;
+					}
+					this.refreshData(true);
+				}
+			},
+			videoPlay(item) {
+				if (this.videoContext && item.id != this.videoContext.id) {
+					this.videoContext.pause();
+				}
+				var video = this.videoContextList[item.id];
+				this.remarkVideo(video);
+			},
+			remarkVideo(video) {
+				this.videoContext = video;
+			}
+		}
+	}
+</script>
+
+<style scoped>
+	.top-scroll {
+		background-color: #FFFFFF;
+		flex-direction: column;
+		z-index: 99;
+		position: sticky;
+		top: 0;
+	}
+
+	.top-scroll1 {
+		background-color: #FFFFFF;
+		flex-direction: column;
+		z-index: 99;
+		position: relative;
+		top: 0;
+	}
+
+	.no-data {
+		flex: 1;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 10;
+	}
+
+	.page-news {
+		flex: 1;
+		flex-direction: column;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+	}
+
+	.listview {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		/* #ifndef APP-NVUE */
+		display: flex;
+		flex-direction: column;
+		/* #endif */
+	}
+
+	.refresh {
+		justify-content: center;
+	}
+
+	.refresh-view {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		width: 750rpx;
+		height: 64px;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.refresh-icon {
+		width: 32px;
+		height: 32px;
+		transition-duration: .5s;
+		transition-property: transform;
+		transform: rotate(0deg);
+		transform-origin: 15px 15px;
+	}
+
+	.refresh-icon-active {
+		transform: rotate(180deg);
+	}
+
+	.loading-icon {
+		width: 28px;
+		height: 28px;
+		margin-right: 5px;
+		color: gray;
+	}
+
+	.loading-text {
+		margin-left: 2px;
+		font-size: 16px;
+		color: #999999;
+	}
+
+	.loading-more {
+		align-items: center;
+		justify-content: center;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		text-align: center;
+	}
+
+	.loading-more-text {
+		font-size: 28upx;
+		color: #999;
+	}
+
+	.tag-item {
+		padding: 5px 10px;
+		width: 120upx;
+	}
+
+	.active {
+		color: #225289;
+	}
+
+	.subtab {
+		flex-direction: row;
+		padding: 10upx 30upx 10upx 30upx;
+		align-items: center;
+		justify-content: center;
+		background-color: #FFFFFF;
+	}
+
+	.item-txt {
+		font-size: 30rpx;
+	}
+
+	.timebox {
+		background-color: #F7F7F7;
+		padding: 26rpx 20rpx;
+	}
+
+	.time-txt {
+		font-size: 26rpx;
+		font-weight: bold;
+	}
+
+	.top-iconbox {
+		z-index: 100;
+		background-color: #FFFFFF;
+		flex-direction: row;
+		padding: 20rpx 40rpx;
+		justify-content: space-between;
+	}
+
+	.top-icon-item {
+		background-color: #FFFFFF;
+		align-items: center;
+		justify-content: center;
+		width: 170rpx;
+	}
+
+	.top-icon {
+		width: 70rpx;
+		height: 70rpx;
+		margin-bottom: 10rpx;
+		/* position: sticky; */
+		top: 0;
+	}
+
+	.top-icon-txt {
+		font-size: 26rpx;
+		color: #909090;
+	}
+
+	.imgbox-more {
+		margin-bottom: 24rpx;
+		flex-direction: row;
+		flex-wrap: nowrap;
+	}
+</style>

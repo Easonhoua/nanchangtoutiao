@@ -1,0 +1,236 @@
+<template>
+	<view class="commentbox">
+		<template v-if="isEdit">
+			<view class="header line-bottom" style="padding-top: 100rpx;">
+				<image @click="goback()" class="back" src="/static/img/common/icon_back.png"></image>
+				<text style="font-size: 32rpx;">我的消息</text>
+				<text @tap="clickEditBtn">编辑</text>
+			</view>
+			<mescroll-uni @down="downCallBack" @init ="initMescroll" @up="upCallback" top="140rpx">
+				<view class="list" v-for="(item,index) in orderList" :key="index"  @tap="orderDetail(item.id)">
+					<view class="righttxt">
+						<view :class="item.status === 1 ? 'tag' : ''"></view>
+						<view class="txt">{{item.title}}</view>
+						<view class="name">{{item.dateline}}</view>
+					</view>
+					<view class="media-item-line" style="position: absolute;"></view>
+				</view>
+			</mescroll-uni>
+		</template>
+		<template v-else>
+			<view class="header line-bottom" style="padding-top: 100rpx;">
+				<image @click="goback()" class="back" src="/static/img/common/icon_back.png"></image>
+				<text style="font-size: 32rpx;">我的消息</text>
+				<text @tap="clickEditBtn">取消</text>
+			</view>
+			<mescroll-uni @down="downCallBack" @init ="initMescroll" @up="upCallback" top="140rpx">
+				<view class="list" v-for="(item,index) in orderList" :key="index"  @tap="orderDetail(item.id)">
+					<!-- 单选按钮 -->
+					<view class="" @tap="selectBatch(item.id,item.radio,index)" @tap.stop>
+						<radio class='blue radio' :class=" item.radio ? 'checked' : ''" :checked="item.radio"></radio>
+					</view>
+					<view class="righttxt">
+						<view :class="item.status === 1 ? 'tag' : ''"></view>
+						<view class="txt">{{item.title}}</view>
+						<view class="name">{{item.dateline}}</view>
+					</view>
+					<view class="media-item-line" style="position: absolute;"></view>
+				</view>
+				<!-- <view class="list">
+					<view class="">
+						<radio class='blue radio' :class=" false ? 'checked' : ''" :checked="false"></radio>
+					</view>
+					<view class="righttxt">
+						<view :class="1 === 1 ? 'tag' : ''"></view>
+						<view class="txt">标题</view>
+						<view class="name">2012-01-01</view>
+					</view>
+					<view class="media-item-line" style="position: absolute;"></view>
+				</view> -->
+			</mescroll-uni>
+			<view class="btn-cancel" @tap="deleteBatchTip">删除</view><!-- 取消按钮 -->
+		</template>
+		<!-- <view class="list" @tap="orderDetail(id)">
+			<view class="righttxt">
+				<view class="tag"></view>
+				<view class="txt">阿三打撒打撒的啊实打实的</view>
+				<view class="name">2012-01-01</view>
+			</view>
+			<view class="media-item-line" style="position: absolute;"></view>
+		</view>
+		<view class="list">
+			<view class="righttxt">
+				<view class="txt">阿三打撒打撒的啊实打实的</view>
+				<view class="name">2012-01-01</view>
+			</view>
+			<view class="media-item-line" style="position: absolute;"></view>
+		</view> -->
+	</view>
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	export default {
+		data() {
+			return {
+				isEdit:true,
+				mescroll: null,
+				orderList: [],
+				msgids:''
+			}
+		},
+		methods: {
+			initMescroll(mescroll){
+				this.mescroll = mescroll;
+			},
+			downCallBack(mescroll)
+			{
+				this.orderList=[];
+				mescroll.resetUpScroll();
+			},
+			upCallback(mescroll)
+			{
+				let url = 'api/ncrb/';
+				let sendData = {
+					action : 'msg',
+					loadnum: (mescroll.num-1)*mescroll.size,
+					tpp: mescroll.size
+				}
+				this.request.get(url,sendData,mescroll).then(res =>{
+					this.orderList = [];
+					for(let i=0;i<res.data.length;i++){
+						res.data[i].dateline = utils.formatYearMinutesDayFormt(res.data[i].dateline + "000");
+						res.data[i].radio = false
+					}
+					this.orderList = this.orderList.concat(res.data); //追加新数据
+				})
+			},
+			//读取详情
+			orderDetail(id){
+				uni.navigateTo({
+					url:'/pages/user/userIndex/orderDetail?id='+id
+				})
+			},
+			//编辑
+			clickEditBtn(){
+				this.isEdit = !this.isEdit;
+				this.ids = '';
+				for(let i=0;i<this.orderList.length;i++){
+					this.orderList[i].radio = false
+				}
+				console.log(this.orderList);
+			},
+			//返回上一页
+			goback(){
+				uni.navigateBack({})
+			},
+			//批量选择
+			selectBatch(selectId,radio,index){
+				//console.log("空this.ids: "+this.ids);
+				//console.log("index: "+index);
+				//console.log("radio: "+radio);
+				this.orderList[index].radio = !radio;
+				//console.log("this.orderList[index].radio: "+this.orderList[index].radio);
+				if(this.orderList[index].radio){//选中
+					if(this.ids == ''){//选中第一个
+						this.ids = selectId;
+					}else{
+						this.ids = this.ids + ',' + selectId;
+					}
+					console.log("选中this.ids: "+this.ids);
+				}else{//取消选中
+					let idsArr = this.ids.split(',');
+					//console.log("取消选中idsArr1: "+idsArr);
+					let idsIndex = '';
+					for(let i=0;i<idsArr.length;i++){
+						if(idsArr[i] == selectId){
+							idsIndex = i;
+							console.log("idsIndex: "+idsIndex);
+						}
+					}
+					idsArr.splice(idsIndex,1);//移除取消选中的id
+					//console.log("取消选中后idsArr2: "+idsArr);
+					this.ids = idsArr.toString();
+					console.log("取消选中后this.ids: "+this.ids);
+				}
+				
+			},
+			//批量删除
+			deleteBatchTip(){
+				if(this.ids){
+					let that = this;
+					uni.showModal({
+						title:'提示',
+						content: '你确定要删除吗',
+						success: function(res){
+							if(res.confirm){
+								//console.log(that.ids);
+								that.deleteBatch();
+							}else if(res.cancel){
+								console.log('用户点击了取消');
+							}
+						}
+					})
+				}else{
+					this.request.toastTips("没有选中任何消息");
+				}
+			},
+			deleteBatch(){
+				let url = 'api/ncrb/';
+				let sendData = {
+					action : 'msg',
+					mod: 'del',
+					msgids: this.ids
+				}
+				console.log("sendData: " + JSON.stringify(sendData));
+				this.request.get(url,sendData).then(res =>{
+					console.log("res: " + JSON.stringify(res));
+					if(res.code === 200){
+						this.clickEditBtn();
+						this.downCallBack(this.mescroll);
+					}
+				})
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import "../../../common/css/common.scss";
+	@import "../../../common/css/other.scss";
+	.commentbox .list{
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+	}
+	.righttxt{
+		position: relative;
+	}
+	.tag{
+		width: 10rpx;
+		height: 10rpx;
+		border-radius: 50%;
+		background-color: red;
+		position: absolute;
+		right: -20rpx;
+		top:24rpx;
+		bottom: 0;
+	}
+	
+	.radio{
+		transform:scale(0.7);
+	}
+	.btn-cancel{
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right:0;
+		height:88rpx;
+		line-height:88rpx;
+		text-align: center;
+		color: #FFFFFF;
+		box-shadow: -2rpx 0 5rpx 0 rgba(0,0,0,.1);
+		z-index: 99;
+		background-color: #225289;
+	}
+</style>

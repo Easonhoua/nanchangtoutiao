@@ -1,0 +1,197 @@
+<template>
+	<div class="mask" @click="wrapperClick()">
+		<div class="mask-content">
+			<text class="title">版本更新啦</text>
+			<view class="scroller-view">
+				<jyf-parser style="line-height: 50rpx;" gesture-zoom lazy-load :html="description" selectable show-with-animation use-anchor></jyf-parser>
+			</view>
+			<text class="button-text" v-on:click.stop="updateButtonClick">立即更新</text>
+		</div>
+	</div>
+
+</template>
+
+<script>
+	import parser from '@/components/jyf-parser/jyf-parser';
+	export default {
+		components: {
+			'jyf-parser': parser
+		},
+		data() {
+			return {
+				description: "亲爱的用户，感谢您一直以来的支持!为更好地保护您的权益，同时遵守相关监管要求，我们更新了",
+				disAgree: false
+			}
+		},
+		created() {
+			const app = getApp();
+			this.description = app.globalData.updateTip;
+			console.log("description=" + this.description);
+		},
+		onUnload() {
+			uni.$off("page-popup");
+		},
+		methods: {
+			wrapperClick: function() {
+
+			},
+			updateButtonClick: function() {
+				const subNVue = uni.getSubNVueById('versionUpdateTip');
+				subNVue.hide();
+				uni.navigateTo({
+					url: '/pages/user/setting/versionUpdate'
+				});
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	.mask {
+		align-items: center;
+		justify-content: center;
+		top: 0rpx;
+		bottom: 0rpx;
+		right: 0rpx;
+		position: fixed;
+		width: 750rpx;
+		background-color: rgba($color: #000000, $alpha: 0.4);
+	}
+
+	.mask-content {
+		width: 550rpx;
+		background-color: #FFFFFF;
+		border-radius: 20rpx;
+		z-index: -1;
+		overflow: hidden;
+	}
+
+	.title {
+		height: 100rpx;
+		line-height: 100rpx;
+		flex: 0;
+		text-align: center;
+		font-size: 36rpx;
+		font-weight: bold;
+	}
+
+	.scroller-view {
+		width: 550rpx;
+		padding: 0rpx 30rpx 0rpx 35rpx;
+	}
+
+	.describle {
+		font-size: 26rpx;
+		color: #333333;
+		text-align: left;
+		line-height: 40rpx;
+	}
+
+	.tip {
+		width: 550rpx;
+		height: 80rpx;
+		font-size: 26rpx;
+		padding: 20rpx 35rpx;
+		margin-bottom: 10rpx;
+		color: #333333;
+		background-color: #FFFFFF;
+		z-index: 3;
+	}
+
+	.deal-text {
+		margin-left: -10rpx;
+		font-size: 24rpx;
+		color: #225289;
+		line-height: 40rpx;
+	}
+
+	.buttons {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		height: 90rpx;
+		padding: 20rpx 30rpx;
+	}
+
+	.button-left {
+		font-size: 30rpx;
+		width: 220rpx;
+		height: 70rpx;
+		line-height: 65rpx;
+		color: #FFFFFF;
+		background-color: #225289;
+		border-radius: 12rpx;
+		text-align: center;
+	}
+
+	.button-right {
+
+		font-size: 30rpx;
+		width: 220rpx;
+		height: 70rpx;
+		line-height: 65rpx;
+		color: #FFFFFF;
+		background-color: #225289;
+		border-radius: 12rpx;
+		text-align: center;
+	}
+
+	.button-text {
+		border-top-style: solid;
+		border-top-width: 2rpx;
+		border-top-color: #F5F5F5;
+		font-size: 30rpx;
+		font-weight: bold;
+		width: 550rpx;
+		height: 100rpx;
+		line-height: 100rpx;
+		color: #225289;
+		text-align: center;
+	}
+
+	.tip-view {
+		width: 460rpx;
+		height: 240rpx;
+		background-color: #FFFFFF;
+		border-radius: 20rpx;
+		z-index: 2;
+		overflow: hidden;
+	}
+
+	.tip-view-title {
+		width: 460rpx;
+		padding: 30rpx 20rpx 30rpx 25rpx;
+		font-size: 30rpx;
+		font-weight: bold;
+	}
+
+	.tip-view-buttons {
+		width: 460rpx;
+		margin-top: 0rpx;
+		flex-direction: row;
+		border-top-style: solid;
+		border-top-width: 1rpx;
+		border-top-color: #225289;
+	}
+
+	.tip-view-left {
+		font-size: 30rpx;
+		width: 230rpx;
+		height: 80rpx;
+		line-height: 80rpx;
+		color: #225289;
+		text-align: center;
+		border-right-width: 1rpx;
+		border-right-style: solid;
+		border-right-color: #225289;
+	}
+
+	.tip-view-right {
+		font-size: 30rpx;
+		width: 230rpx;
+		height: 80rpx;
+		line-height: 80rpx;
+		color: #225289;
+		text-align: center;
+	}
+</style>

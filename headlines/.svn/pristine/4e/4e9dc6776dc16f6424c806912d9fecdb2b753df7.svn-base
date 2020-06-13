@@ -1,0 +1,494 @@
+<template>
+	<view class="blogger page-news">
+		<view class="bgbox" >
+			<image class="bg" src="/static/img/home/ljrwbj.png"  mode="widthFix"></image>
+		</view>
+		<view class="main line-bottom" :style="'margin-top:'+headerHight+'rpx'" >
+			<view class="header">
+				<image class="header-icon"  src="../../static/img/common/w_back@3x.png" @click="goback()"></image>
+				<!-- <image class="header-icon" src="../../static/img/common/w_fx@3x.png"></image> -->
+			</view>
+			<view class="user">
+				<image class="logo"  :src="nchData.logo?nchData.logo:'/static/img/user/user_logo@3x.png'"></image>
+				<text class="user-name">{{nchData.name}}</text>
+				<text class="desc" v-if="nchData.desc">{{nchData.desc}}</text>
+			</view>
+			<view class="tab">
+				<view class="item">
+					<text class="item-txt" :class="this.style =='all'?'active':''" @click="search('all')">全部</text>
+					<view class="line" v-if="this.style =='all'"></view>
+				</view>
+				<view class="item">
+					<text class="item-txt" :class="this.style =='default'?'active':''" @click="search('default')">文章</text>
+					<view class="line" v-if="this.style =='default'"></view>
+				</view>
+				<view class="item">
+					<text class="item-txt" :class="this.style =='video'?'active':''" @click="search('video')">视频</text>
+					<view class="line" v-if="this.style =='video'"></view>
+				</view>
+			</view>
+		</view>
+		<view class="tab-con">
+			<uni-list class="listview" :enableBackToTop="true" :scroll-y="true" @scrolltolower="loadMore()" :style="'top:'+topHight+'rpx'">
+				<uni-refresh class="refresh" @refresh="onrefresh" @pullingdown="onpullingdown" :display="refreshing ? 'show' : 'hide'">
+					<div class="refresh-view">
+						<image class="refresh-icon" :src="refreshIcon" :style="{width: (refreshing || pulling) ? 0: '32px'}" :class="{'refresh-icon-active': refreshFlag}"></image>
+						<uni-load-more v-if="refreshing" class="loading-icon" status="loading" :contentText="loadingMoreText"></uni-load-more>
+						<text class="loading-text">{{refreshText}}</text>
+					</div>
+				</uni-refresh>
+
+				<uni-cell v-for="(item, index) in dataList" :key="item.id">
+					<!-- <news-video-item v-if="index == 0" :newsItem="item"  @click="goDetail(item)"></news-video-item> -->
+					<news-pics-item v-if="item.style == 'pics'" :newsItem="item" @click="goDetail(item)"></news-pics-item>
+					<news-video-item v-else-if="item.style == 'video'" :newsItem="item" @click="goDetail(item)" v-on:videoPlay="videoPlay"></news-video-item>
+					<news-bigpic-item v-else-if="item.style == 'activity'|| item.style == 'bigpic' || item.style=='h5_bigpic'" :newsItem="item" @click="goDetail(item)"></news-bigpic-item>
+					<left-news-item v-else :newsItem="item" @click="goDetail(item)"></left-news-item>
+				</uni-cell>
+				<uni-cell v-if="isNoData">
+				    <view class="loading-more" style="margin-top: 60rpx;">
+				        <image style="width: 405rpx; height: 200rpx;" src="/static/img/common/nodata.png"></image>
+				    </view>
+				</uni-cell>
+				<uni-cell v-if="(isLoading || dataList.length > 4)&&!isNoData">
+					<view class="loading-more">
+						<text class="loading-more-text">{{loadingText}}</text>
+					</view>
+				</uni-cell>
+			</uni-list>
+		</view>
+	</view>
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	import request from '@/api/index.js';
+	import uniList from '@/components/uni-list.vue';
+	import uniCell from '@/components/uni-cell.vue';
+	import uniRefresh from '@/components/uni-refresh.vue';
+	import uniLoadMore from '@/components/uni-load-more.vue';
+	import leftNewsItem from '@/components/item-list/left-news-item.nvue';
+	import newsPicsItem from '@/components/item-list/news-pics-item.nvue';
+	import newsBigpicItem from '@/components/item-list/news-bigpic-item.nvue';
+	import newsVideoItem from '@/components/item-list/news-video-item.nvue';
+	export default {
+		components: {
+			uniList,
+			uniCell,
+			uniRefresh,
+			uniLoadMore,
+			leftNewsItem,
+			newsPicsItem,
+			newsBigpicItem,
+			newsVideoItem
+		},
+		data() {
+			return {
+				headerHight:-440,
+				topHight: 440,
+				nchData: {
+					subscribe: 0
+				},
+				subscribe: 0,
+				dataList: [],
+				style: 'all',
+				navigateFlag: false,
+				pulling: false,
+				refreshing: false,
+				refreshFlag: false,
+				refreshText: "",
+				isLoading: false,
+				loadingText: '加载中...',
+				isNoData: false,
+				pageNo: 0,
+				loadnum: 0,
+				tpp: 30,
+				angle: 0,
+				currDate: '',
+				weekday: '',
+				requestParams: {
+					action: 'nch',
+					mod: 'home',
+					token: uni.getStorageSync("tokens"),
+					wid: uni.getStorageSync("wid")
+				},
+				loadingMoreText: {
+					contentdown: '',
+					contentrefresh: '',
+					contentnomore: ''
+				},
+				hasNotchInScreen: false, //是否是刘海屏
+				refreshIcon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5QTFRFcHBw3Nzct7e39vb2ycnJioqK7e3tpqam29vb////D8oK7wAAAAp0Uk5T////////////ALLMLM8AAABxSURBVHja7JVBDoAgDASrjqj//7CJBi90iyYeOHTPMwmFZrHjYyyFYYUy1bwUZqtJIYVxhf1a6u0R7iUvWsCcrEtwJHp8MwMdvh2amHduiZD3rpWId9+BgPd7Cc2LIkPyqvlQvKxKBJ//Qwq/CacAAwDUv0a0YuKhzgAAAABJRU5ErkJggg==",
+				videoContextList: {},
+				videoContext: ''
+			}
+		},
+		created() {
+			this.pullTimer = null;
+			let _this = this;
+			// #ifdef APP-PLUS
+			this.headerHight = plus.navigator.hasNotchInScreen()?-460:-400;
+			this.topHight = plus.navigator.hasNotchInScreen()?500:540;
+				// this.statusBarHeight = plus.navigator.hasNotchInScreen() ? '66rpx':'40rpx';
+			// #endif
+		},
+		onLoad(e) {
+			if (e.id) {
+				this.id = e.id;
+				this.loadData(true);
+			}
+		},
+		onHide() {
+			if (this.videoContext) {
+				this.videoContext.pause();
+			}
+		},
+		methods: {
+			loadData(refresh) {
+				let _this = this;
+				if (this.isLoading) {
+					return;
+				}
+				if (refresh) {
+					_this.dataList = [];
+					_this.pageNo = 0;
+					_this.loadnum = 0;
+					_this.requestParams.loadnum = 0;
+					this.isNoData = false;
+				}
+				this.isLoading = true;
+				this.requestParams.style = this.style;
+				this.requestParams.id = this.id;
+
+				var url = 'api/ncrb/';
+				request.get(url,_this.requestParams).then(result =>{
+					if(result.code === 200){
+						_this.nchData = result.data;
+						_this.subscribe = _this.nchData.subscribe;
+						const data = _this.nchData.list;
+						_this.isNoData = (data.length <= 0);
+						var data_list = [];
+						if (!_this.isNoData) {
+							data_list = data.map((news) => {
+								if (news.style == 'video') {
+									var video = uni.createVideoContext(news.id);
+									_this.videoContextList[news.id] = video;
+								}
+								news.id = news.id;
+								news.datetime = utils.friendlyDate(news.dateline + "000");
+								news.time = utils.formatMinutesTime(news.dateline + "000");
+								return news;
+							});
+						
+							if (refresh) {
+								_this.dataList = data_list;
+							} else {
+								_this.dataList = _this.dataList.concat(data_list);
+								
+							}
+							_this.pageNo += 1;
+							_this.loadnum = _this.pageNo * _this.tpp;
+							_this.requestParams.loadnum = _this.loadnum;
+							console.log(_this.pageNo,_this.loadnum,_this.requestParams.loadnum)
+						}
+					}else{
+						if (_this.dataList.length == 0) {
+							_this.isNoData = true;
+						}
+					}
+					_this.isLoading = false;
+					if (refresh) {
+						_this.refreshing = false;
+						_this.refreshFlag = false;
+						_this.refreshText = "已刷新";
+						_this.pulling = false;
+						if (_this.pullTimer) {
+							clearTimeout(_this.pullTimer);
+						}
+						_this.pullTimer = setTimeout(() => {
+							_this.pulling = false;
+						}, 1000);
+					}
+				}).catch(response => {
+					_this.isLoading = false;
+					console.log(response);
+					if (_this.dataList.length == 0) {
+						_this.isNoData = true;
+					}
+				});	
+			},
+			loadMore(e) {
+				if (!this.isNoData) {
+					this.loadData();
+				}
+			},
+			clear() {
+				this.dataList = [];
+				this.loadnum = 0;
+				this.pageNo = 0;
+			},
+			goDetail(detail) {
+
+				console.log("details=: " + JSON.stringify(detail));
+				utils.gotoDetail(detail);
+				setTimeout(() => {
+					this.navigateFlag = false;
+				}, 200)
+			},
+			refreshData() {
+				if (this.isLoading) {
+					return;
+				}
+				this.pulling = true;
+				this.refreshing = true;
+				this.refreshText = "正在刷新...";
+				this.loadData(true);
+			},
+			onrefresh(e) {
+				this.refreshData();
+			},
+			search(style) {
+				this.style = style;
+				this.loadData(true);
+			},
+			clearkeyWord() {
+				this.keyword = '';
+			},
+			goback() {
+				console.log("back");
+				uni.navigateBack({});
+			},
+			onpullingdown(e) {
+				if (this.refreshing) {
+					return;
+				}
+				this.pulling = false;
+				if (Math.abs(e.pullingDistance) > Math.abs(e.viewHeight)) {
+					this.refreshFlag = true;
+					this.refreshText = "释放立即刷新";
+				} else {
+					this.refreshFlag = false;
+					this.refreshText = "下拉可以刷新";
+				}
+			},
+			//关注
+			toFollow: function() {
+				if (request.alreadyLogin()) {
+					const url = 'api/ncrb/';
+					let data = {
+						action: 'nch',
+						mod: 'subscribe',
+						id: this.id
+					};
+					request.post(url, data).then(res => {
+						if (res.code == 200) {
+							if (res.data.subscribe == 1) {
+								request.toastTips("关注成功");
+							} else {
+								request.toastTips("取消成功");
+							}
+							this.nchData.subscribe = res.data.subscribe;
+							this.subscribe = res.data.subscribe;
+						}
+					})
+				}
+			},
+			videoPlay(item) {
+				if (this.videoContext && item.id != this.videoContext.id) {
+					this.videoContext.pause();
+				}
+				var video = this.videoContextList[item.id];
+				this.remarkVideo(video);
+			},
+			remarkVideo(video) {
+				this.videoContext = video;
+			}
+		}
+	}
+</script>
+<style>
+	.page-news {
+		flex: 1;
+		flex-direction: column;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+	}
+	.mescroll-empty{
+		top:300rpx;
+	}
+
+	.listview {
+		position: fixed;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		/* #ifndef APP-NVUE */
+		display: flex;
+		flex-direction: column;
+		/* #endif */
+	}
+
+	.refresh {
+		justify-content: center;
+	}
+
+	.refresh-view {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		width: 750rpx;
+		height: 64px;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.refresh-icon {
+		width: 32px;
+		height: 32px;
+		transition-duration: .5s;
+		transition-property: transform;
+		transform: rotate(0deg);
+		transform-origin: 15px 15px;
+	}
+
+	.refresh-icon-active {
+		transform: rotate(180deg);
+	}
+
+	.loading-icon {
+		width: 28px;
+		height: 28px;
+		margin-right: 5px;
+		color: gray;
+	}
+
+	.loading-text {
+		margin-left: 2px;
+		font-size: 16px;
+		color: #999999;
+	}
+
+	.loading-more {
+		align-items: center;
+		justify-content: center;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		text-align: center;
+	}
+
+	.loading-more-text {
+		font-size: 28upx;
+		color: #999;
+	}
+
+	.blogger {
+		flex-direction: column;
+	}
+
+	.bgbox {
+		/* height:800rpx; */
+	}
+
+	.bg {
+		width: 750rpx;
+		position: relative;
+	}
+
+	.header {
+		flex-direction: row;
+		justify-content: space-between;
+		padding: 30rpx;
+	}
+
+	.header-icon {
+		width: 40rpx;
+		height: 40rpx;
+	}
+
+	.main {
+		/* position: absolute;
+		top:0;
+		left:0;
+		right:0;
+		bottom: 0;
+		padding-top:30rpx; */
+		margin-top: -440rpx;
+	}
+
+	.user {
+		position: relative;
+		top: -20rpx;
+		flex-direction: column;
+		padding: -20rpx 30rpx 40rpx 30rpx;
+		align-items: center;
+	}
+
+	.logo {
+		width: 156rpx;
+		height: 156rpx;
+		border-radius: 100rpx;
+	}
+
+	.user-name {
+		margin-top: 20rpx;
+		font-size: 30rpx;
+		color: #FFFFFF;
+	}
+
+	.attention {
+		border-width: 1rpx;
+		border-style: solid;
+		border-color: #FFFFFF;
+		color: #e5e5e5;
+		padding: 6rpx 20rpx;
+		font-size: 22rpx;
+		border-radius: 5rpx;
+	}
+
+
+	.tab {
+		z-index: 100;
+		flex-direction: row;
+		background-color: #FFFFFF;
+		padding: 30rpx 60rpx;
+		justify-content: space-between;
+	}
+
+	.item-txt {
+		font-size: 36rpx;
+		color: #000000;
+		margin-bottom: 10rpx;
+	}
+
+	.item {
+		background-color: #FFFFFF;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.active {
+		color: #E00000;
+	}
+
+	.line {
+		width: 37rpx;
+		height: 5rpx;
+		border-radius: 10rpx;
+		background-color: #E00000;
+	}
+
+	.desc {
+		font-size: 24rpx;
+		line-height: 50rpx;
+		margin: 0rpx 60rpx 15rpx 60rpx;
+		lines: 3;
+		text-overflow: ellipsis;
+		color: #FFFFFF;
+	}
+</style>

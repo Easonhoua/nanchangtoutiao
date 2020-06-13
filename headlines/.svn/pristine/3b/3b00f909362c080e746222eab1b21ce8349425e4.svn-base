@@ -1,0 +1,174 @@
+<template>
+	<view class="slidebox">
+		<swiper class="screen-swiper" :class="dotStyle?'square-dot':'round-dot'"  :circular="true"
+		 :autoplay="true" interval="5000" current="0" duration="500" style="height:312rpx" @change="changeSwiper">
+			<swiper-item v-for="(item,index) in swiperList" :key="index" @click="click(item)">
+				<image class="slidebox-img" :src="item.pic" mode="aspectFill"></image>
+			</swiper-item>
+		</swiper>
+		<!-- 轮播指示点样式修改 -->
+		<view class="dots" v-if="swiperList.length > 1">
+			<block v-for="(item,index) in swiperList.length" :key="item">
+				<view class="dot" :class="index==swiperCurrent ? ' active' : ''"></view>
+			</block>
+		</view>
+	</view>
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	export default {
+		props: {
+			newsItem: {
+				type: Object,
+				default: function(e) {
+					return {}
+				}
+			}
+		},
+		data() {
+			return {
+				swiperList:[],
+				cardCur: 0,
+				dotStyle: true,
+				towerStart: 0,
+				direction: '',
+				swiperCurrent:0
+			};
+		},
+		created() {
+			this.swiperList = this.newsItem.slidelist;
+			// console.log(lidenewsItem: " + JSON.stringify(this.newsItem));
+		},
+		onLoad() {
+			this.TowerSwiper('swiperList');
+			// 初始化towerSwiper 传已有的数组名即可
+		},
+		methods: {
+			changeSwiper(e) {
+				this.swiperCurrent = e.detail.current;
+			},
+			click(detail) {
+				// console.log(etail1: " + JSON.stringify(detail));
+				utils.gotoDetail(detail);
+				// if(detail.url){
+				// 	gotoWebView(detail.url,'');
+				// }else{
+				// 	uni.navigateTo({
+				// 		url: '/pages/detail/details?id=' + detail.id
+				// 	});
+				// }
+			},
+			setNewsItem(item){
+				this.newsItem = item;
+			},
+			DotStyle(e) {
+				this.dotStyle = e.detail.value
+			},
+			// cardSwiper
+			cardSwiper(e) {
+				this.cardCur = e.detail.current
+			},
+			// towerSwiper
+			// 初始化towerSwiper
+			TowerSwiper(name) {
+				let list = this[name];
+				for (let i = 0; i < list.length; i++) {
+					list[i].zIndex = parseInt(list.length / 2) + 1 - Math.abs(i - parseInt(list.length / 2))
+					list[i].mLeft = i - parseInt(list.length / 2)
+				}
+				this.swiperList = list
+			},
+			
+			// towerSwiper触摸开始
+			TowerStart(e) {
+				this.towerStart = e.touches[0].pageX
+			},
+			
+			// towerSwiper计算方向
+			TowerMove(e) {
+				this.direction = e.touches[0].pageX - this.towerStart > 0 ? 'right' : 'left'
+			},
+			
+			// towerSwiper计算滚动
+			TowerEnd(e) {
+				let direction = this.direction;
+				let list = this.swiperList;
+				if (direction == 'right') {
+					let mLeft = list[0].mLeft;
+					let zIndex = list[0].zIndex;
+					for (let i = 1; i < this.swiperList.length; i++) {
+						this.swiperList[i - 1].mLeft = this.swiperList[i].mLeft
+						this.swiperList[i - 1].zIndex = this.swiperList[i].zIndex
+					}
+					this.swiperList[list.length - 1].mLeft = mLeft;
+					this.swiperList[list.length - 1].zIndex = zIndex;
+				} else {
+					let mLeft = list[list.length - 1].mLeft;
+					let zIndex = list[list.length - 1].zIndex;
+					for (let i = this.swiperList.length - 1; i > 0; i--) {
+						this.swiperList[i].mLeft = this.swiperList[i - 1].mLeft
+						this.swiperList[i].zIndex = this.swiperList[i - 1].zIndex
+					}
+					this.swiperList[0].mLeft = mLeft;
+					this.swiperList[0].zIndex = zIndex;
+				}
+				this.direction = ""
+				this.swiperList = this.swiperList
+			}
+			
+		}
+	}
+</script>
+
+<style lang="scss" scoped>
+	.slidebox{
+		height:340rpx;
+		padding:20rpx;
+		padding-right: 30rpx;
+	}
+	.slidebox-img{
+		position: sticky;
+		top: 0;
+		border-radius: 10rpx;
+		height:312rpx;
+		width: 710rpx;
+		margin-right: 34rpx;
+	}
+	.screen-swiper {
+		height:310upx;
+		width: 750upx;
+	}
+	.media-item-line {
+		position: absolute;
+		left: 0upx;
+		right: 0upx;
+		bottom: 0;
+		height: 1upx;
+		background-color: #ebebeb;
+	}
+	
+	.dots {
+		position:relative;
+		bottom: 30rpx;
+		left:5rpx;
+		// left:305rpx;
+		// 这里一定要注意兼容不然很可能踩坑
+		z-index: 99;
+		flex-direction: row;
+		justify-content: center;		
+	}
+	.dot {
+		width: 16rpx;
+		height: 16rpx;
+		background-color: rgba(0, 0, 0, .3);
+		margin-right: 5rpx;
+		margin-left:5rpx;
+		border-radius: 20rpx;
+	}
+	.active {
+		width: 16rpx;
+		height: 16rpx;
+		background-color: rgba(255, 255, 255, .8);
+	}
+</style>

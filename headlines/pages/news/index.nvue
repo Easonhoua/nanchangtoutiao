@@ -1,0 +1,472 @@
+<template>
+	<view class="tabs">
+		<view class="status-bar" :style="hasNotchInScreen?'height: 66rpx;':''"></view>
+		<view class="header" :style="hasNotchInScreen?'margin-top: 66rpx;':''">
+			<image class="left-icon" @click="goDB()" src="../../static/img/home/h_db@3x.png"></image>
+			<image class="logo" src="../../static/img/home/bitmap@3x.png"></image>
+			<image class="right-icon" @click="goSearch()" src="../../static/img/home/h_ss@3x.png"></image>
+		</view>
+		<scroll-view ref="tabbar1" id="tab-bar" class="tab-bar" :scroll="false" :scroll-x="true" :show-scrollbar="false"
+		 :scroll-into-view="scrollInto">
+			<view style="flex-direction: column;">
+				<view style="flex-direction: row;">
+					<view class="uni-tab-item" v-for="(tab,index) in tabList" :key="tab.id" :id="tab.id" :ref="'tabitem'+index"
+					 :data-id="index" :data-current="index" @click="ontabtap">
+						<text class="uni-tab-item-title" :class="tabIndex==index ? 'uni-tab-item-title-active' : ''">{{tab.name}}</text>
+						<text class="line" v-if="tabIndex == index"></text>
+					</view>
+				</view>
+			</view>
+		</scroll-view>
+		<swiper class="tab-box" ref="swiper1" :current="tabIndex" :duration="300" @change="onswiperchange" @transition="onswiperscroll"
+		 @animationfinish="animationfinish" @onAnimationEnd="animationfinish">
+			<swiper-item class="swiper-item" v-for="(page, index) in tabList" :key="index">
+				<newsInquirePage v-if="page.newsid == 2 " class="page-item" :nid="page.newsid" ref="page" style="flex-direction: column;"></newsInquirePage>
+				<newsBuinessNewPage v-else-if="page.newsid == 15 " class="page-item" :nid="page.newsid" ref="page" style="flex-direction: column;"></newsBuinessNewPage>
+				<newsBigdataNewPage v-else-if="page.newsid == 12 " class="page-item" :nid="page.newsid" ref="page" style="flex-direction: column;"></newsBigdataNewPage>
+				<newsYaowenPage v-else-if="page.newsid == 60 " class="page-item" :nid="page.newsid" ref="page" style="flex-direction: column;"></newsYaowenPage>
+				<newsLianboPage v-else-if="page.newsid == 61 " class="page-item" :nid="page.newsid" ref="page" ></newsLianboPage>
+				<newsPage v-else class="page-item" :nid="page.newsid" ref="page"></newsPage>
+			</swiper-item>
+		</swiper>
+	</view>
+</template>
+
+<script>
+	
+	// #ifdef APP-PLUS
+	const dom = weex.requireModule('dom');
+	// #endif
+	import utils from '@/common/js/util.js';
+	import newsPage from './news-page.nvue';
+	import newsYaowenPage from './news-yaowen-page.nvue';
+	import newsBuinessNewPage from './news-buiness-page-new.nvue';
+	import newsBigdataNewPage from './news-bigdata-page-new.nvue';
+	import newsInquirePage from './news-inquire-page.nvue';
+	import newsLianboPage from './news-lianbo-page.nvue';
+	// 缓存每页最多
+	const MAX_CACHE_DATA = 100;
+	// 缓存页签数量
+	const MAX_CACHE_PAGE = 3;
+	const TAB_PRELOAD_OFFSET = 1;
+
+	export default {
+		components: {
+			newsPage,
+			newsYaowenPage,
+			newsBuinessNewPage,
+			newsInquirePage,
+			newsLianboPage,
+			newsBigdataNewPage
+		},
+		data() {
+			return {
+				tabList: [{
+					id: "tab01",
+					name: '头条',
+					newsid: 25
+				},{
+					id: "tab02",
+					name: '要闻',
+					newsid: 60
+				}, {
+					id: "tab03",
+					name: '联播',
+					newsid: 61
+				}, {
+					id: "tab04",
+					name: '问政',
+					newsid: 2
+				}, {
+					id: "tab05",
+					name: '赣商',
+					newsid: 15
+				}, {
+					id: "tab06",
+					name: '数字经济',
+					newsid: 12
+				}
+				// , {
+				// 	id: "tab06",
+				// 	name: '县区',
+				// 	newsid: 62
+				// }
+				],
+				tabIndex: 1,
+				cacheTab: [],
+				scrollInto: "",
+				navigateFlag: false,
+				isTap: false,
+				hasNotchInScreen:false//是否是刘海屏
+			}
+		},
+		onLoad() {
+			var agree = uni.getStorageSync("agreeUserDeal");
+			if(!agree){
+				const subNVue = uni.getSubNVueById('userDealPrivacy');
+				subNVue.show();
+			}
+			// #ifdef APP-PLUS
+			utils.checkAppVersion(true);
+			// #endif
+			// const app = getApp();
+			// this.tabIndex = app.globalData.tabIndex;
+			// console.log("onLoad this.tabIndex="+this.tabIndex);
+			var that = this;
+			uni.$on("refresh",function(tabIndex){
+				console.log("onLoad this.tabIndex="+tabIndex);
+				that.switchTab(tabIndex);
+			})
+		},
+		onReady() {
+			// #ifdef APP-PLUS
+			this.hasNotchInScreen = plus.navigator.hasNotchInScreen();
+				// this.statusBarHeight = plus.navigator.hasNotchInScreen() ? '66rpx':'40rpx';
+			// #endif
+			this._lastTabIndex = 0;
+			this.swiperWidth = 0;
+			this.tabbarWidth = 0;
+			this.tabListSize = {};
+			this._touchTabIndex = 0;
+
+			// #ifndef MP-ALIPAY
+			this.pageList = this.$refs.page;
+			// #endif
+			// #ifdef MP-ALIPAY
+			this.pageList = [];
+			for (var i = 0; i < this.tabList.length; i++) {
+				this.pageList.push(this.$refs['page' + i][0]);
+			}
+			// #endif
+			console.log("onReady this.tabIndex="+this.tabIndex);
+			this.switchTab(this.tabIndex);
+
+			this.getTabbarItemsSize();
+		},
+		onHide(){
+			this.pageList.forEach((page) =>{
+				if(page.videoContext){
+					page.videoContext.pause();
+				}
+			})
+		},	
+		onPageScroll(e) {
+			console.log(e.scrollTop);
+			if(e.scrollTop > 15){
+				this.scrollFlag = true;
+			}else{
+				this.scrollFlag = false;
+			}
+		},
+		methods: {
+			ontabtap(e) {
+				let index = e.target.dataset.current || e.currentTarget.dataset.current;
+				//let offsetIndex = this._touchTabIndex = Math.abs(index - this._lastTabIndex) > 1;
+
+				// #ifdef APP-PLUS || H5 || MP-WEIXIN || MP-QQ
+				this.isTap = true;
+				var currentSize = this.tabListSize[index];
+				this._touchTabIndex = index;
+				// #endif
+
+				this.switchTab(index);
+			},
+			onswiperchange(e) {
+				// 注意：百度小程序会触发2次
+
+				// #ifndef APP-PLUS || H5 || MP-WEIXIN || MP-QQ
+				let index = e.target.current || e.detail.current;
+				this.switchTab(index);
+				// #endif
+			},
+			onswiperscroll(e) {
+				if (this.isTap) {
+					return;
+				}
+
+				var offsetX = e.detail.dx;
+				var preloadIndex = this._lastTabIndex;
+				if (offsetX > TAB_PRELOAD_OFFSET) {
+					preloadIndex++;
+				} else if (offsetX < -TAB_PRELOAD_OFFSET) {
+					preloadIndex--;
+				}
+				if (preloadIndex === this._lastTabIndex || preloadIndex < 0 || preloadIndex > this.pageList.length - 1) {
+					return;
+				}
+				if (this.pageList[preloadIndex].dataList.length === 0) {
+					this.loadTabData(preloadIndex);
+				}
+
+			},
+			animationfinish(e) {
+				// #ifdef APP-PLUS || H5 || MP-WEIXIN || MP-QQ
+				let index = e.detail.current;
+				if (this._touchTabIndex === index) {
+					this.isTap = false;
+				}
+				this._lastTabIndex = index;
+				this.switchTab(index);
+				// #endif
+			},
+			getTabbarItemsSize() {
+				// // #ifdef APP-NVUE
+				// dom.getComponentRect(this.$refs.tabbar1, res => {
+				// 	this.tabbarWidth = res.size.width;
+				// });
+				// dom.getComponentRect(this.$refs['swiper1'], res => {
+				// 	this.swiperWidth = res.size.width;
+				// });
+				// for (var i = 0; i < this.tabList.length; i++) {
+				// 	this.getElementSize(dom, this.$refs['tabitem' + i][0], i);
+				// }
+				// // #endif
+
+				// // #ifdef MP-WEIXIN || H5 || MP-QQ
+				// uni.createSelectorQuery().in(this).select('.tab-box').fields({
+				// 	dataset: true,
+				// 	size: true,
+				// }, (res) => {
+				// 	this.swiperWidth = res.width;
+				// }).exec();
+				// uni.createSelectorQuery().in(this).selectAll('.uni-tab-item').boundingClientRect((rects) => {
+				// 	rects.forEach((rect) => {
+				// 		this.tabListSize[rect.dataset.id] = rect;
+				// 	})
+				// }).exec();
+				// // #endif
+
+			},
+			getElementSize(dom, ref, id) {
+				// dom.getComponentRect(ref, res => {
+				// 	this.tabListSize[id] = res.size;
+				// });
+			},
+			switchTab(index) {
+				this.pageList.forEach((page) =>{
+					if(page.videoContext){
+						page.videoContext.pause();
+					}
+					page.tag = "";
+					if(index == 2){
+						page.subIndex =	0;
+					}else{
+						page.subIndex = null;
+						
+					}
+				})
+				
+				if(index == 4 || index == 2 || index == 5){
+					this.loadTabData(index);
+				}else{
+					if (this.pageList[index].dataList.length === 0) {
+						this.loadTabData(index);
+					}
+				}
+
+				if (this.tabIndex === index) {
+					return;
+				}
+				// 缓存 tabId
+				if (this.pageList[this.tabIndex].dataList.length > MAX_CACHE_DATA) {
+					let isExist = this.cacheTab.indexOf(this.tabIndex);
+					if (isExist < 0) {
+						this.cacheTab.push(this.tabIndex);
+					}
+				}
+
+				this.tabIndex = index;
+
+				// #ifdef APP-NVUE
+				this.scrollTabTo(index);
+				// #endif
+				// #ifndef APP-NVUE
+				this.scrollInto = this.tabList[index].id;
+				// #endif
+
+				// 释放 tabId
+				if (this.cacheTab.length > MAX_CACHE_PAGE) {
+					let cacheIndex = this.cacheTab[0];
+					this.clearTabData(cacheIndex);
+					this.cacheTab.splice(0, 1);
+				}
+			},
+			scrollTabTo(index) {
+				// const el = this.$refs['tabitem' + index][0];
+				// let offset = 0;
+				// // TODO fix ios offset
+				// if (index > 0) {
+				// 	offset = this.tabbarWidth / 2 - this.tabListSize[index].width / 2;
+				// 	if (this.tabListSize[index].right < this.tabbarWidth / 2) {
+				// 		offset = this.tabListSize[0].width;
+				// 	}
+				// }
+				// dom.scrollToElement(el, {
+				// 	offset: -offset
+				// });
+			},
+			loadTabData(index) {
+				this.pageList[index].loadData(true);
+			},
+			clearTabData(index) {
+				this.pageList[index].clear();
+			},
+			goDB(){
+				// uni.navigateTo({
+				// 	url:'/pages/readNewspaper/readNewspaper'
+				// })
+				
+				utils.gotoWebView("http://wx1ecf9bb3f9cf4af8.h5.0791look.com/app/?p=h5&id=77","");
+			},
+			goSearch(){
+				uni.navigateTo({
+					url:'/pages/search/search'
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+	/* #ifndef APP-PLUS */
+	page {
+		width: 100%;
+		min-height: 100%;
+		display: flex;
+	}
+	/* #endif */
+	.status-bar {
+		height: 40rpx;
+		width: 750rpx;
+		z-index: 3;
+		background-color: #FFFFFF;
+		position: fixed;
+	}
+	.line{
+		width:45rpx;
+		height:5rpx;
+		border-radius: 3rpx;
+		background-color: #FFFFFF;
+		position: relative;
+		bottom:12rpx;
+	}
+	.header{
+		margin-top: 40rpx;
+		padding:26rpx;
+		justify-content: space-between;
+		align-items: center;
+		flex-direction: row;
+	}
+	.logo{
+		width:187rpx;
+		height:48rpx;
+	}
+	.left-icon{
+		width:60rpx;
+		height:40rpx;
+	}
+	.right-icon{
+		width:40rpx;
+		height:40rpx;
+	}
+	.tabs {
+		flex: 1;
+		flex-direction: column;
+		overflow: hidden;
+		background-color: #ffffff;
+		/* #ifdef MP-ALIPAY || MP-BAIDU */
+		height: 100vh;
+		/* #endif */
+	}
+
+	.tab-bar {
+		width: 750upx;
+		height: 85upx;
+		flex-direction: row;
+		/* #ifndef APP-PLUS */
+		white-space: nowrap;
+		/* #endif */
+		background-color: #225289;
+	}
+
+	/* #ifndef APP-NVUE */
+	.tab-bar ::-webkit-scrollbar {
+	    display: none;  
+	    width: 0 !important;  
+	    height: 0 !important;  
+	    -webkit-appearance: none;  
+	    background: transparent;  
+	}
+	/* #endif */
+
+	.scroll-view-indicator {
+		position: relative;
+		height: 2px;
+		background-color: transparent;
+	}
+
+	.scroll-view-underline {
+		position: absolute;
+		top: 0;
+		bottom: 4rpx;
+		width: 0;
+		background-color: #ffffff;
+		width:10rpx;
+		height:5rpx;
+		border-radius: 5rpx;
+	}
+
+	.scroll-view-animation {
+		transition-duration: 0.2s;
+		transition-property: left;
+	}
+
+	.tab-bar-line {
+		height: 1upx;
+		background-color: #FFFFFF;
+	}
+
+	.tab-box {
+		flex: 1;
+	}
+
+	.uni-tab-item {
+		/* #ifndef APP-PLUS */
+		display: inline-block;
+		/* #endif */
+		flex-wrap: nowrap;
+		padding-left: 15px;
+		padding-right: 15px;
+		align-items: center;
+	}
+
+	.uni-tab-item-title {
+		color: #7BB3F3;
+		font-size: 30upx;
+		height: 80upx;
+		line-height: 80upx;
+		flex-wrap: nowrap;
+		/* #ifndef APP-PLUS */
+		white-space: nowrap;
+		/* #endif */
+	}
+
+	.uni-tab-item-title-active {
+		color: #ffffff;
+	}
+
+	.swiper-item {
+		flex: 1;
+		flex-direction: column;
+	}
+
+	.page-item {
+		flex: 1;
+		flex-direction: row;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+	}
+</style>

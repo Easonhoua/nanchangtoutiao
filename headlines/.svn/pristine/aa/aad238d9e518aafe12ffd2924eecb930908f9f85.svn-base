@@ -1,0 +1,181 @@
+<template>
+	<view class="media-item view" v-if="newsItem.title" @click="click">
+		<view class="source-pics" v-if="newsNick">
+			<view class="source-user">
+				<image class="source-icon-pics" :src="newsItem.headimgurl?newsItem.headimgurl:'/static/img/home/home_icon3@3x.png'"></image>
+				<view class="username">
+					<text class="source-txt-pics">{{newsItem.nickname}}</text>
+					<text class="source-time-pics">{{newsItem.datetime}}</text>
+				</view>
+			</view>
+			<text class="re-tag" v-if="newsItem.tag">{{newsItem.tag}}</text>
+		</view>
+		<view class="title">
+			<text class="title-txt" :class="newsNick?'txt1':'txt'">{{newsItem.title}}</text>
+		</view>
+		<view class="videobox">
+			<video class="video" :id="newsItem.id" :src="newsItem.video_url" :poster="newsItem.pic" play-btn-position="center"
+			 style="width:100%;height:389upx;" @play="videoPlay"></video>
+		</view>
+		
+		<!-- <view class="tagbox" v-else>
+			<text class="label" style="color: #FFFFFF; background-color: #DF0000;" v-if="newsItem.tag && newsItem.tag.indexOf('头条') >=0">{{newsItem.tag}}</text>
+			<text class="label" v-else-if="newsItem.tag">{{newsItem.tag}}</text>
+			<text class="source">{{newsItem.from}} {{newsItem.datetime}}</text>
+		</view> -->
+		<view class="media-item-line" style="position: absolute;"></view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			newsItem: {
+				type: Object,
+				default: function(e) {
+					return {}
+				}
+			},
+			newsNick: {
+				type: Boolean,
+				default: false
+			}
+		},
+		created() {
+			// this.newsItem.video_url = "https://cdn.0791look.com/data/attachment/2020/0410/20200410164945I7lZYZ.mp4";
+		},
+		methods: {
+			videoPlay: function() {
+				this.$emit('videoPlay', this.newsItem);
+			},
+			click() {
+				this.$emit('click');
+			},
+			close(e) {
+				e.stopPropagation();
+				this.$emit('close');
+			}
+		}
+	}
+</script>
+
+<style scoped>
+	.view {
+		flex-direction: column;
+	}
+
+
+	.media-item {
+		position: relative;
+		flex: 1;
+		flex-direction: column;
+		padding: 20upx 30upx 21upx 30upx;
+	}
+
+	.media-item-line {
+		position: absolute;
+		left: 30upx;
+		right: 30upx;
+		bottom: 0;
+		height: 1upx;
+		background-color: #ebebeb;
+	}
+
+	.title {
+		/* flex-direction: row; */
+		margin-bottom: 20rpx;
+		margin-right: 20rpx;
+		
+	}
+	.title-txt{
+		font-size: 34rpx;
+		line-height:45rpx;
+	}
+	.txt {
+		font-size: 30rpx;
+		font-weight: bold;
+		lines: 2;
+		text-overflow: ellipsis;
+	}
+
+	.txt1 {
+		font-size: 30rpx;
+		lines: 2;
+		text-overflow: ellipsis;
+	}
+
+	.videobox {
+		height: 385rpx;
+		padding: 0;
+		position: relative;
+	}
+
+	.tagbox {
+		flex-direction: row;
+		margin-top:25rpx;
+	}
+	
+	.label {
+		flex-direction: row;
+		font-size: 20rpx;
+		color: #DF0000;
+		background-color: #FFFFFF;
+		padding: 2rpx 5rpx;
+		margin-right: 18rpx;
+		border-radius: 5rpx;
+		border-style: solid;
+		border-color:  #DF0000;
+		border-width: 1rpx;
+	}
+	
+	.source {
+		color: #AAB0BB;
+		font-size: 24rpx;
+	}
+
+	.tagbox-txt {
+		padding: 5rpx 20rpx;
+		background-color: #000000;
+		color: #FFFFFF;
+		border-radius: 30rpx;
+		font-size: 24rpx;
+	}
+
+	.video {
+		width: 610rpx;
+		height: 385rpx;
+		position: absolute;
+		bottom: 0rpx;
+		left: 0rpx;
+		top: 0;
+		right: 0;
+	}
+
+	.source-pics {
+			width: 100%;
+			flex-direction: row;
+			margin-bottom:10rpx;
+		}
+		.source-user{
+			flex-direction: row;
+			align-items: center;
+			flex: 1;
+			width: 80%;
+			margin-right: 50rpx;
+		}
+		.source-icon-pics{
+			width:45rpx;
+			height:45rpx;
+			margin-right: 8rpx;
+			border-radius: 20rpx;
+		}
+		.source-txt-pics{
+			margin-left: 10rpx;
+			font-size: 24rpx;
+			color:#AAB0BB;
+		}
+		.source-time-pics{
+			font-size: 20rpx;
+			color:#AAB0BB;
+		}
+</style>

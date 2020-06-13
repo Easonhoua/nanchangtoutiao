@@ -1,0 +1,333 @@
+@charset "UTF-8";
+/*项目字体色*/
+/*项目背景色*/
+/*项目线框色*/
+/*项目线框圆角*/
+/*项目字体大小*/
+.bigdata .header-tab-con .panel .panel-con .meeting .item {
+  background: #fff;
+  box-shadow: 5rpx 5rpx 5rpx rgba(13, 25, 43, 0.1);
+}
+
+.bigdata .header-tab-con .panel .panel-con .meeting .item .txt .item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bigdata .header-tab-con .yw-listbox .list-original .list-original-con, .bigdata .header-tab-con .notice .notice-con .txt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.user .top .main-icon .top-iconbox .item, .bigdata .header-tab-con .yw-listbox .list-original, .bigdata .header-tab-con .notice .notice-con {
+  display: flex;
+  display: -webkit-flex;
+}
+
+.user .top .main-icon .top-iconbox, .user .top .main-icon .userbox, .bigdata .header-tab-con .panel .panel-con .meeting .item .txt .item-time, .bigdata .header-tab-con .panel .panel-con .meeting, .bigdata .header-tab-con .panel .panel-con .home-icon, .bigdata .header-tab {
+  display: flex;
+  display: -webkit-flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bigdata .header-tab-con .panel .panel-con .home-icon .item {
+  display: flex;
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+.bigdata .header-tab {
+  width: 100%;
+  padding: 22rpx 58rpx 20rpx 20rpx;
+  background-color: #225289;
+  font-size: 28rpx;
+  height: 55px;
+  left: 0;
+  top: 90rpx;
+  z-index: 2;
+}
+.bigdata .header-tab .item {
+  color: #7BB3F3;
+  text-align: center;
+  width: 160rpx;
+  margin-right: 20rpx;
+  font-size: 32rpx;
+  display: inline-block;
+  flex-wrap: nowrap;
+  padding-top: 10rpx;
+}
+.bigdata .header-tab .item.active {
+  color: #ffffff;
+}
+.bigdata .header-tab .item.active .line {
+  width: 36rpx;
+  height: 5rpx;
+  border-radius: 3rpx;
+  background-color: #ffffff;
+  display: inline-block;
+  position: absolute;
+  bottom: -6rpx;
+  left: 50%;
+  margin-left: -18rpx;
+}
+.bigdata .header-tab .arrow-down {
+  width: 30rpx;
+  height: 30rpx;
+  position: absolute;
+  right: 22rpx;
+  top: 26rpx;
+}
+.bigdata .header-tab-con {
+  padding-top: 80rpx;
+}
+.bigdata .header-tab-con .slidebox {
+  width: 100%;
+  height: 428rpx;
+  padding: 24rpx;
+}
+.bigdata .header-tab-con .panel .title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #232323;
+  position: relative;
+  padding: 24rpx;
+}
+.bigdata .header-tab-con .panel .title:before {
+  width: 6rpx;
+  height: 26rpx;
+  background-color: #ff8503;
+  display: inline-block;
+  content: "";
+  margin-right: 10rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .home-icon {
+  flex-wrap: wrap;
+  padding: 0 24rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .home-icon .item {
+  width: 25%;
+  margin-bottom: 56rpx;
+  text-align: center;
+  align-items: center;
+}
+.bigdata .header-tab-con .panel .panel-con .home-icon .item .iconbox {
+  width: 126rpx;
+  height: 125rpx;
+  margin-bottom: 38rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .home-icon .item .iconbox .icon {
+  width: 126rpx;
+  height: 125rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .home-icon .item .txt {
+  font-size: 26rpx;
+  color: #333333;
+}
+.bigdata .header-tab-con .panel .panel-con .meeting {
+  flex-wrap: wrap;
+  padding: 20rpx 24rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .meeting .item {
+  width: 335rpx;
+  background-color: #ffffff;
+  margin-bottom: 45rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .meeting .item .imgbox {
+  width: 335rpx;
+  height: 335rpx;
+  margin-bottom: 22rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .meeting .item .imgbox .img {
+  width: 335rpx;
+  height: 335rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .meeting .item .txt {
+  padding: 0rpx 10rpx 30rpx 10rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .meeting .item .txt .item-title {
+  font-size: 26rpx;
+  color: #333333;
+  margin-bottom: 16rpx;
+}
+.bigdata .header-tab-con .panel .panel-con .meeting .item .txt .item-time {
+  color: #ff8503;
+  font-size: 22rpx;
+}
+.bigdata .header-tab-con .banner1 {
+  width: 100%;
+  height: 312rpx;
+  padding: 24rpx;
+  margin-bottom: 30rpx;
+}
+.bigdata .header-tab-con .banner1 .img {
+  width: 100%;
+  height: 312rpx;
+}
+.bigdata .header-tab-con .notice .title {
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 0 24rpx;
+  margin-bottom: 10rpx;
+}
+.bigdata .header-tab-con .notice .title .red {
+  font-size: 26rpx;
+}
+.bigdata .header-tab-con .notice .notice-con {
+  background-color: #f7f7f7;
+  padding: 14rpx 24rpx;
+}
+.bigdata .header-tab-con .notice .notice-con .time {
+  width: 60rpx;
+  margin-right: 30rpx;
+  font-weight: 600;
+  font-size: 22rpx;
+}
+.bigdata .header-tab-con .notice .notice-con .txt {
+  flex: 1;
+  font-size: 22rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list {
+  padding: 32rpx 24rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list .title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 14rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list .tagbox {
+  margin-bottom: 35rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list .tagbox .label {
+  display: inline-block;
+  font-size: 16rpx;
+  color: #ffffff;
+  background-color: #DF0000;
+  padding: 2rpx 5rpx;
+  margin-right: 18rpx;
+  border-radius: 5rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list .tagbox .source {
+  color: #9f9f9f;
+  font-size: 18rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list .sub-list {
+  margin-bottom: 32rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list .sub-list .sub-title {
+  font-size: 26rpx;
+  position: relative;
+  font-weight: 600;
+}
+.bigdata .header-tab-con .yw-listbox .list .sub-list .sub-title:before {
+  content: "";
+  width: 8rpx;
+  height: 21rpx;
+  background-color: #225289;
+  display: inline-block;
+  margin-right: 20rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list .sub-list .sub-source {
+  font-size: 18rpx;
+  color: #9f9f9f;
+  padding-left: 26rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list .sub-list:last-child {
+  margin-bottom: 0;
+}
+.bigdata .header-tab-con .yw-listbox .list-original .left {
+  flex: 1;
+}
+.bigdata .header-tab-con .yw-listbox .list-original .imgbox {
+  width: 170rpx;
+  height: 170rpx;
+  margin-left: 30rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list-original .imgbox .img {
+  width: 170rpx;
+  height: 170rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list-original .title {
+  font-size: 28rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list-original .title:before {
+  display: none;
+}
+.bigdata .header-tab-con .yw-listbox .list-original .list-original-con {
+  color: #828282;
+  font-size: 20rpx;
+  margin-bottom: 20rpx;
+}
+.bigdata .header-tab-con .yw-listbox .list-original .tagbox {
+  margin-bottom: 0;
+}
+.bigdata .header-tab-con .yw-listbox .list-original .tagbox .label {
+  background-color: none;
+  border: 1rpx solid #df0000;
+  color: #df0000;
+}
+
+.user .top {
+  width: 100%;
+  height: 440rpx;
+  /* background: url(~@../../static/img/user/user_bg@3x.png) no-repeat; */
+  background-size: 100% 100%;
+  position: relative;
+  padding: 30rpx;
+  box-sizing: border-box;
+}
+.user .top .main-icon {
+  padding: 30rpx 30rpx 0 30rpx;
+  background-color: #ffffff;
+  position: relative;
+  top: 143rpx;
+  border: 1rpx solid #f5f5f5;
+}
+.user .top .main-icon .userbox {
+  margin-bottom: 60rpx;
+}
+.user .top .main-icon .userbox .user-logo .loginbar .logo {
+  width: 80rpx;
+  height: 80rpx;
+  margin-right: 30rpx;
+  border-radius: 50rpx;
+  vertical-align: middle;
+  margin-top: -10rpx;
+}
+.user .top .main-icon .userbox .user-logo .loginbar .txt {
+  font-size: 34rpx;
+  font-weight: 600;
+}
+.user .top .main-icon .userbox .signin {
+  background-color: #f9f3e3;
+  padding: 5rpx 20rpx;
+  color: #623c25;
+  font-size: 22rpx;
+  border-radius: 30rpx;
+}
+.user .top .main-icon .top-iconbox {
+  flex-wrap: wrap;
+}
+.user .top .main-icon .top-iconbox .item {
+  width: 25%;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 42rpx;
+}
+.user .top .main-icon .top-iconbox .item .iconbox {
+  width: 60rpx;
+  height: 60rpx;
+  margin-bottom: 5rpx;
+}
+.user .top .main-icon .top-iconbox .item .iconbox .icon {
+  width: 60rpx;
+  height: 60rpx;
+}
+.user .top .main-icon .top-iconbox .item .txt {
+  color: #9f9f9f;
+  font-size: 24rpx;
+}

@@ -1,0 +1,455 @@
+<template>
+	<view class="page-news header-tab-con">
+		<uni-list class="listview" :enableBackToTop="true" :scroll-y="true" @scrolltolower="loadMore()">
+		    <uni-refresh class="refresh" @refresh="onrefresh" @pullingdown="onpullingdown" :display="refreshing ? 'show' : 'hide'">
+		        <div class="refresh-view">
+		            <image class="refresh-icon" :src="refreshIcon" :style="{width: (refreshing || pulling) ? 0: '32px'}"
+		                :class="{'refresh-icon-active': refreshFlag}"></image>
+		            <uni-load-more v-if="refreshing" class="loading-icon" status="loading" :contentText="loadingMoreText"></uni-load-more>
+		            <text class="loading-text">{{refreshText}}</text>
+		        </div>
+		    </uni-refresh>
+			<uni-cell>
+				<view class="slidebox">
+					<swiper class="screen-swiper" :class="dotStyle?'square-dot':'round-dot'" :indicator-dots="true" :circular="true"
+					 :autoplay="true" interval="5000" duration="500" style="height:372rpx;">
+						<swiper-item v-for="(item,index) in swiperList" :key="index">
+							<!-- style="height:312rpx;width: 710rpx;margin: 20rpx;" -->
+							<image class="slidebox-img" :src="item.url" mode="aspectFill" v-if="item.type=='image'" ></image>
+							<video :src="item.url" autoplay loop muted :show-play-btn="false" :controls="false" objectFit="cover" v-if="item.type=='video'"></video>
+						</swiper-item>
+					</swiper>
+				</view>
+				<view class="panel">
+					<view class="panel-title">
+						<view class="line-left"></view>
+						<text class="panel-title-txt">推荐机构</text>
+					</view>
+					<view class="home-iconbox">
+						<view class="home-icon-item">
+							<image class="home-icon" src="../../static/img/home/home_icon1@3x.png"></image>
+							<text class="home-icon-txt">南昌市国资委</text>
+						</view>
+						<view class="home-icon-item">
+							<image class="home-icon" src="../../static/img/home/home_icon2@3x.png"></image>
+							<text class="home-icon-txt">南昌市政</text>
+						</view>
+						<view class="home-icon-item">
+							<image class="home-icon" src="../../static/img/home/home_icon3@3x.png"></image>
+							<text class="home-icon-txt">南昌城投</text>
+						</view>
+						<view class="home-icon-item">
+							<image class="home-icon" src="../../static/img/home/home_icon4@3x.png"></image>
+							<text class="home-icon-txt">南昌城投</text>
+						</view>
+						<view class="home-icon-item">
+							<image class="home-icon" src="../../static/img/home/home_icon5@3x.png"></image>
+							<text class="home-icon-txt">南昌市旅游局</text>
+						</view>
+						<view class="home-icon-item">
+							<image class="home-icon" src="../../static/img/home/home_icon6@3x.png"></image>
+							<text class="home-icon-txt">轨道公司</text>
+						</view>
+						<view class="home-icon-item">
+							<image class="home-icon" src="../../static/img/home/home_icon7@3x.png"></image>
+							<text class="home-icon-txt">南昌日报社</text>
+						</view>
+						<view class="home-icon-item">
+							<image class="home-icon" src="../../static/img/home/home_icon8@3x.png"></image>
+							<text class="home-icon-txt">南昌电视台</text>
+						</view>
+					</view>
+				</view>
+				<!-- 推荐结构结束 -->
+				<view class="panel">
+					<view class="panel-title meeting-title">
+						<view class="line-left"></view>
+						<text class="panel-title-txt">会议</text>
+					</view>
+					<view class="meetingbox">
+						<view class="meeting-item" >
+							<image class="meeting-img" src="../../static/img/home/h_img@3x.png"></image>
+							<view class="meeting-txt">
+								<text class="meeting-item-tltle">创新中国领袖</text>
+								<view class="meeting-time">
+									<text class="meeting-time-txt">2020年5月20日</text>
+									<text class="meeting-time-txt">中国 · 上海</text>
+								</view>
+							</view>
+						</view>
+						<view class="meeting-item" >
+							<image class="meeting-img" src="../../static/img/home/h_img@3x.png"></image>
+							<view class="meeting-txt">
+								<text class="meeting-item-tltle">创新中国领袖</text>
+								<view class="meeting-time">
+									<text class="meeting-time-txt">2020年5月20日</text>
+									<text class="meeting-time-txt">中国 · 上海</text>
+								</view>
+							</view>
+						</view>
+						<view class="meeting-item" >
+							<image class="meeting-img" src="../../static/img/home/h_img@3x.png"></image>
+							<view class="meeting-txt">
+								<text class="meeting-item-tltle">创新中国领袖</text>
+								<view class="meeting-time">
+									<text class="meeting-time-txt">2020年5月20日</text>
+									<text class="meeting-time-txt">中国 · 上海</text>
+								</view>
+							</view>
+						</view>
+						<view class="meeting-item" >
+							<image class="meeting-img" src="../../static/img/home/h_img@3x.png"></image>
+							<view class="meeting-txt">
+								<text class="meeting-item-tltle">创新中国领袖</text>
+								<view class="meeting-time">
+									<text class="meeting-time-txt">2020年5月20日</text>
+									<text class="meeting-time-txt">中国 · 上海</text>
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+			</uni-cell>
+		    <uni-cell v-if="(isLoading || dataList.length > 4)&&!isNoData">
+		        <view class="loading-more">
+		            <text class="loading-more-text">{{loadingText}}</text>
+		        </view>
+		    </uni-cell>
+		</uni-list>
+	
+	</view>
+</template>
+
+<script>
+	import uniList from '@/components/uni-list.vue';
+	import uniCell from '@/components/uni-cell.vue';
+	import uniRefresh from '@/components/uni-refresh.vue';
+	export default {
+		components: {
+			uniList,
+			uniCell,
+			uniRefresh
+		},
+		data() {
+			return {
+				dataList: [],
+				pulling: false,
+				refreshing: false,
+				refreshFlag: false,
+				refreshText: "",
+				isLoading: false,
+				loadingText: '加载中...',
+				cardCur: 0,
+				swiperList: [{
+					id: 0,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 1,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png',
+				}, {
+					id: 2,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 3,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 4,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 5,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 6,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}],
+				dotStyle: false,
+				towerStart: 0,
+				direction: '',
+				refreshIcon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5QTFRFcHBw3Nzct7e39vb2ycnJioqK7e3tpqam29vb////D8oK7wAAAAp0Uk5T////////////ALLMLM8AAABxSURBVHja7JVBDoAgDASrjqj//7CJBi90iyYeOHTPMwmFZrHjYyyFYYUy1bwUZqtJIYVxhf1a6u0R7iUvWsCcrEtwJHp8MwMdvh2amHduiZD3rpWId9+BgPd7Cc2LIkPyqvlQvKxKBJ//Qwq/CacAAwDUv0a0YuKhzgAAAABJRU5ErkJggg=="
+			};
+		},
+		onLoad() {
+			this.TowerSwiper('swiperList');
+			// 初始化towerSwiper 传已有的数组名即可
+		},
+		created() {
+			this.pullTimer = null;
+		},
+		methods: {
+			loadData(refresh) {
+				console.log("refresh="+refresh);
+				var _this = this;
+				_this.isLoading = false;
+				if (refresh) {
+					_this.refreshText = "已刷新";
+					if (_this.pullTimer) {
+						clearTimeout(_this.pullTimer);
+					}
+					_this.pullTimer = setTimeout(() => {
+						_this.pulling = false;
+						_this.refreshing = false;
+					}, 500);
+				}
+			},
+			clear() {
+			},
+			loadMore(e) {
+			},
+			refreshData() {
+				if (this.isLoading) {
+					return;
+				}
+				this.pulling = true;
+				this.refreshing = true;
+				this.refreshText = "正在刷新...";
+				this.loadData(true);
+			},
+			onrefresh(e) {
+				this.refreshData();
+			},
+			onpullingdown(e) {
+				if (this.refreshing) {
+					return;
+				}
+				this.pulling = false;
+				if (Math.abs(e.pullingDistance) > Math.abs(e.viewHeight)) {
+					this.refreshFlag = true;
+					this.refreshText = "释放立即刷新";
+				} else {
+					this.refreshFlag = false;
+					this.refreshText = "下拉可以刷新";
+				}
+			},
+			DotStyle(e) {
+				this.dotStyle = e.detail.value
+			},
+			// cardSwiper
+			cardSwiper(e) {
+				this.cardCur = e.detail.current
+			},
+			// towerSwiper
+			// 初始化towerSwiper
+			TowerSwiper(name) {
+				let list = this[name];
+				for (let i = 0; i < list.length; i++) {
+					list[i].zIndex = parseInt(list.length / 2) + 1 - Math.abs(i - parseInt(list.length / 2))
+					list[i].mLeft = i - parseInt(list.length / 2)
+				}
+				this.swiperList = list
+			},
+
+			// towerSwiper触摸开始
+			TowerStart(e) {
+				this.towerStart = e.touches[0].pageX
+			},
+
+			// towerSwiper计算方向
+			TowerMove(e) {
+				this.direction = e.touches[0].pageX - this.towerStart > 0 ? 'right' : 'left'
+			},
+
+			// towerSwiper计算滚动
+			TowerEnd(e) {
+				let direction = this.direction;
+				let list = this.swiperList;
+				if (direction == 'right') {
+					let mLeft = list[0].mLeft;
+					let zIndex = list[0].zIndex;
+					for (let i = 1; i < this.swiperList.length; i++) {
+						this.swiperList[i - 1].mLeft = this.swiperList[i].mLeft
+						this.swiperList[i - 1].zIndex = this.swiperList[i].zIndex
+					}
+					this.swiperList[list.length - 1].mLeft = mLeft;
+					this.swiperList[list.length - 1].zIndex = zIndex;
+				} else {
+					let mLeft = list[list.length - 1].mLeft;
+					let zIndex = list[list.length - 1].zIndex;
+					for (let i = this.swiperList.length - 1; i > 0; i--) {
+						this.swiperList[i].mLeft = this.swiperList[i - 1].mLeft
+						this.swiperList[i].zIndex = this.swiperList[i - 1].zIndex
+					}
+					this.swiperList[0].mLeft = mLeft;
+					this.swiperList[0].zIndex = zIndex;
+				}
+				this.direction = ""
+				this.swiperList = this.swiperList
+			},
+		}
+	}
+</script>
+
+<style>
+.listview {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	/* #ifndef APP-NVUE */
+	display: flex;
+	flex-direction: column;
+	/* #endif */
+}
+.page-news {
+	flex: 1;
+	flex-direction: column;
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+}
+	.slidebox{
+		/* height:428rpx; */
+		margin-bottom:10rpx;
+	}
+	.slidebox-img{
+		border-radius: 10rpx;
+		width: 710rpx;
+		height:352rpx;
+		margin: 20rpx;
+	}
+.panel-title{
+	flex-direction: row;
+	align-items: center;
+	padding:20rpx;
+	margin-bottom:30rpx;
+}
+.panel-title-txt{
+	color:#232323;
+	font-size:30rpx;
+	font-weight: bold;
+}
+.line-left{
+	width:6rpx;
+	height:26rpx;
+	background-color: #FF9200;
+	margin-right:10rpx;
+}
+.home-iconbox {
+	flex-direction: row;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	padding:0 20rpx;
+}
+
+.home-icon-item {
+	width:170rpx; 
+	flex-direction: column;
+	align-items: center;
+	margin-bottom:56rpx;
+	
+}
+
+.home-icon {
+	width: 126rpx;
+	height:125rpx;
+	margin-bottom:34rpx;
+}
+
+.home-icon-txt {
+	font-size: 26rpx;
+	color: #333333;
+}
+
+.meetingbox{
+	padding: 20rpx;
+	flex-direction: row;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+.meeting-title{
+	margin-bottom: 0rpx;
+}
+.meeting-item{
+	width:335rpx;
+	background-color: #FFFFFF;
+	border-style: solid;
+	border-color: #f3f5f7;
+	border-width: 1rpx;
+	margin-bottom:40rpx;
+}
+.meeting-img{
+	width: 335rpx;
+	height:335rpx;
+	margin-bottom: 22rpx;
+}
+.meeting-item-tltle{
+	font-size: 26rpx;
+	color:#333333;
+	margin-bottom:10rpx;
+}
+.meeting-txt{
+	padding:20rpx;
+}
+.meeting-time{
+	flex-direction: row;
+	justify-content: space-between;
+}
+.meeting-time-txt{
+	font-size:22rpx;
+	color:#FF8503;
+}
+.refresh {
+		justify-content: center;
+	}
+
+	.refresh-view {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		width: 750rpx;
+		height: 64px;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.refresh-icon {
+		width: 32px;
+		height: 32px;
+		transition-duration: .5s;
+		transition-property: transform;
+		transform: rotate(0deg);
+		transform-origin: 15px 15px;
+	}
+
+	.refresh-icon-active {
+		transform: rotate(180deg);
+	}
+
+	.loading-icon {
+		width: 28px;
+		height: 28px;
+		margin-right: 5px;
+		color: gray;
+	}
+
+	.loading-text {
+		margin-left: 2px;
+		font-size: 16px;
+		color: #999999;
+	}
+
+	.loading-more {
+		align-items: center;
+		justify-content: center;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		text-align: center;
+	}
+
+	.loading-more-text {
+		font-size: 28upx;
+		color: #999;
+	}
+	
+</style>

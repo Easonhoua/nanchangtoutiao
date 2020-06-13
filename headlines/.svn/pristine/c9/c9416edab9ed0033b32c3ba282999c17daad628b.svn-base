@@ -1,0 +1,196 @@
+view,input,button,textarea{
+	font-size:30rpx;
+	line-height:1.5;
+	color:$txt-color;
+}
+image,form{
+	width:100%;
+}
+.page{
+	background:$bg-white-color;
+}
+
+/* 字数省略 */
+.txt-cut{
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+}
+.txt-cut-two{
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+}
+
+// 上下边线
+.line-top,.line-bottom{
+    position: relative;
+	
+}
+.line-top:before{
+	content: " ";
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	height: 1px;
+	border-top: 1px solid #f6f6fa;
+	color: rgba(0,0,0,0.1);
+	color: var(--weui-FG-3);
+	-webkit-transform-origin: 0 0;
+	transform-origin: 0 0;
+	-webkit-transform: scaleY(0.5);
+	transform: scaleY(0.5);
+	z-index: 2;
+}
+.line-bottom:after{
+	content: " ";
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	height: 1px;
+	border-bottom: 1px solid #f6f6fa;
+	color: rgba(0,0,0,0.1);
+	color: var(--weui-FG-3);
+	-webkit-transform-origin: 0 0;
+	transform-origin: 0 0;
+	-webkit-transform: scaleY(0.5);
+	transform: scaleY(0.5);
+	z-index: 2;
+}
+.tab{
+	@extend %flex-justify-content;
+}
+.red{
+	color:$txt-color-grey-red;
+}
+.bold{
+	font-weight: 700;
+}
+//分享样式
+.share-back-view{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(0, 0, 0, 0.4);
+	display: flex;
+	-webkit-box-orient: vertical;
+	-webkit-box-direction: normal;
+	flex-direction: column;
+	z-index: 9999;
+}
+.share-bottom-view{
+	position: fixed;
+	margin-top: auto;
+	width: 750rpx;
+	bottom: 0rpx;
+	z-index: 10000;
+	background-color: #FFFFFF;
+	text-align: center;
+}
+.share-text-detail{
+	font-size: 28rpx;
+	color: #000000;
+	text-align: center;
+}
+.share-view{
+	width:750rpx;
+	padding: 60rpx 0px;
+	display: flex;
+	-webkit-box-orient: horizontal;
+	-webkit-box-direction: normal;
+	flex-direction: row;
+	-webkit-box-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	justify-content: center;
+}
+.share-item{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin:0 30rpx;
+	font-size: 24rpx;
+}
+.share-item-image{
+	width: 80rpx;
+	height: 80rpx;
+	padding: 10rpx;
+}
+.share-cancel-button{
+	border-top: 1rpx solid #F5F5F5;
+	width: 750rpx;
+	height: 100rpx;
+	line-height: 100rpx;
+	font-size: 28rpx;
+	bottom: 20rpx;
+	font-size: 28rpx;
+	color: #000000;
+	text-align: center;
+}
+
+//分享样式1
+.share-back-view1{
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+.share-bottom-view1{
+	position: fixed;
+	bottom: 0rpx;
+	background-color: #FFFFFF;
+}
+.share-text-detail1{
+	font-size: 28rpx;
+	color: #000000;
+	text-align: center;
+}
+.share-view1{
+	width:750rpx;
+	padding: 60rpx 0px;
+	display: flex;
+	-webkit-box-orient: horizontal;
+	-webkit-box-direction: normal;
+	flex-direction: row;
+	-webkit-box-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	justify-content: center;
+}
+.share-item1{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin:0 30rpx;
+	align-items: center;
+}
+.share-item-image1{
+	width: 80rpx;
+	height: 80rpx;
+}
+.share-cancel-button1{
+	border-top: 1rpx solid #F5F5F5;
+	width: 750rpx;
+	height: 100rpx;
+	line-height: 100rpx;
+	font-size: 28rpx;
+	text-align: center;
+}
+
+.uni-textarea{
+	width:100%;
+	background:#FFF;
+}
+.uni-textarea textarea{
+	width:96%;
+	padding:18upx 2%;
+	line-height:1.6;
+	font-size:28upx;
+	max-height: 500rpx;
+	border:1rpx solid #bcbcbc;
+	border-radius: 10rpx;
+}

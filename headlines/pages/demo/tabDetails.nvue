@@ -1,0 +1,227 @@
+<template>
+	<view class="blogger page-news">
+		<view class="bgbox">
+			<image class="bg" src="/static/img/home/tab_bg@3x.png" mode=" aspectFit"></image>
+		</view>
+		<view class="main line-bottom">
+			<view class="header">
+				<image class="header-icon" src="../../static/img/common/w_back@3x.png" @click="goback()"></image>
+				<image class="header-icon" src="../../static/img/common/w_fx@3x.png"></image>
+			</view>
+			<view class="user">
+				<text class="user-name">标签名称</text>
+				<text class="desc">阅读：1.1W人</text>
+				<text class="desc introduction">标签简介：为切实保障医保基金安全，看护好人民群众治病的救命钱，近日，市医保局、市财政局联合印发《南昌市欺诈骗取医疗保障基金行为举报奖励实施细则》（以下简称《细则》），积极引导全社会各界良性互动、有序参与基金监管工作，鼓励社会各界对涉嫌欺诈骗取医保基金的行为进行举报，一经查实将根据查实金额的一定比例，对举报人予以奖励，每起案件奖励额度最高不超过10万元（含）。</text>
+			</view>
+			<view class="listbox">
+				<view class="list">
+					<view class="inner">
+						<text class="time">09:37 来自 南昌日报</text>
+						<text class="list-con">为切实保障医保基金安全，看护好人民群众治病的救命钱，近日，市医保局、市财政局联合印发《南昌市欺诈骗取医疗保障基金行为举报奖励实施细则》（以下简称《细则》），积极引导全社会各界良性互动、有序参与基金监管工作，鼓励社会各界对涉嫌欺诈骗取医保基金的行为进行举报，一经查实将根据查实金额的一定比例，对举报人予以奖励，每起案件奖励额度最高不超过10万元（含）。
+						</text>
+						<view class="statistics">
+							<text class="item font22">287764 阅读</text>
+							<view class="item">
+								<text class="font22">|</text>
+							</view>
+							<view class="item">
+								<image class="icon" src="../../static/img/common/l_sc@3x.png"></image>
+								<text class="font22">10</text>
+							</view>
+							<view class="item">
+								<image class="icon" src="../../static/img/common/l_pl@3x.png"></image>
+								<text class="font22">8888</text>
+							</view>
+							<view class="item">
+								<image class="icon" src="../../static/img/common/l_fx@3x.png"></image>
+								<text class="font22">355</text>
+							</view>
+						</view>
+					</view>
+					<image class="line" src="/static/img/home/tab_line@3x.png"></image>
+				</view>
+			</view>
+		</view>
+		
+	</view>
+</template>
+
+<script>
+	
+</script>
+<style>
+	.page-news {
+		flex: 1;
+		flex-direction: column;
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+	}
+
+	.listview {
+		position: fixed;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		/* #ifndef APP-NVUE */
+		display: flex;
+		flex-direction: column;
+		/* #endif */
+	}
+
+	.refresh {
+		justify-content: center;
+	}
+
+	.refresh-view {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		width: 750rpx;
+		height: 64px;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.refresh-icon {
+		width: 32px;
+		height: 32px;
+		transition-duration: .5s;
+		transition-property: transform;
+		transform: rotate(0deg);
+		transform-origin: 15px 15px;
+	}
+
+	.refresh-icon-active {
+		transform: rotate(180deg);
+	}
+
+	.loading-icon {
+		width: 28px;
+		height: 28px;
+		margin-right: 5px;
+		color: gray;
+	}
+
+	.loading-text {
+		margin-left: 2px;
+		font-size: 16px;
+		color: #999999;
+	}
+
+	.loading-more {
+		align-items: center;
+		justify-content: center;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		text-align: center;
+	}
+
+	.loading-more-text {
+		font-size: 28upx;
+		color: #999;
+	}
+
+	.blogger {
+		flex-direction: column;
+	}
+
+	.bg {
+		width: 750rpx;
+		position: relative;
+	}
+
+	.header {
+		flex-direction: row;
+		justify-content: space-between;
+		padding: 30rpx;
+	}
+
+	.header-icon {
+		width: 40rpx;
+		height: 40rpx;
+	}
+
+	.main {
+		/* position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	bottom: 0;
+	padding-top:30rpx; */
+		margin-top: -460rpx;
+	}
+
+	.user {
+		flex-direction: column;
+		padding: -30rpx 30rpx 40rpx 30rpx;
+		justify-content: flex-start;
+	}
+
+
+	.user-name {
+		margin-top: 20rpx;
+		font-size: 30rpx;
+		color: #FFFFFF;
+	}
+	.desc {
+		font-size: 24rpx;
+		line-height: 50rpx;
+		margin: 0rpx 30rpx 15rpx 0rpx;
+		color: #FFFFFF;
+	}
+	.introduction{
+		margin-top:40rpx;
+		lines: 2;
+		text-overflow: ellipsis;
+	}
+	.listbox{
+		
+		margin-top:80rpx;
+	}
+	.inner{
+		padding:30rpx;
+	}
+	.list-con{
+		font-size: 32rpx;
+		line-height:45rpx;
+	}
+	.time{
+		font-size:26rpx;
+		color:#474747;
+		margin-bottom:20rpx;
+	}
+	.statistics {
+		justify-content:space-between;
+		flex-direction: row;
+		align-items: center;
+	}
+	.rightbox{
+		flex: 1;
+		flex-direction: row;
+		justify-content: flex-end;
+	}
+	.item {
+		color: #AAB0BB;
+		font-size: 22rpx;
+		flex-direction: row;
+		align-items: center;
+	}
+	.font22{
+		font-size:24rpx;
+		color:#AAB0BB;
+	}
+	.icon {
+		width: 30rpx;
+		height: 30rpx;
+		margin-right: 20rpx;
+	}
+	.line{
+		height:38rpx;
+	}
+</style>

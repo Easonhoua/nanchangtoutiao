@@ -1,0 +1,166 @@
+<template>
+	<view class="list-original" :class="newsItem.desc?'list1':'list'" @click="click">
+		<view class="imgbox-left" v-if="newsItem.pic">
+			<image class="img" :src="newsItem.pic"></image>
+		</view>
+		<view class="right">
+			<view><text class="title">{{newsItem.title}}</text></view>
+			<view>
+				<text class="list-original-con" v-if="newsItem.desc">{{newsItem.desc}}</text>
+			</view>
+			<view class="tagbox">
+				<text class="label" style="color: #FFFFFF; background-color: #DF0000;" v-if="newsItem.tag && newsItem.tag.indexOf('头条') >=0">{{newsItem.tag}}</text>
+				<text class="label" v-else-if="newsItem.tag">{{newsItem.tag}}</text>
+				<text class="source">{{newsItem.from}} {{newsItem.datetime}}</text>
+			</view>
+		</view>
+		<view class="media-item-line" style="position: absolute;"></view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			newsItem: {
+				type: Object,
+				default: function(e) {
+					return {}
+				}
+			},
+			picPosition: {
+				type: String,
+				default: 'right'
+			},
+		},
+		methods: {
+			click() {
+				this.$emit('click');
+			},
+			close(e) {
+				e.stopPropagation();
+				this.$emit('close');
+			}
+		}
+	}
+</script>
+
+<style>
+.list {
+	padding: 35rpx 32rpx;
+	position: relative;
+}
+.list1 {
+	padding: 35rpx 32rpx;
+	position: relative;
+	align-items: flex-start;
+	border-top-color: #ebebeb;
+	border-top-width: 1rpx;
+}
+.title {
+	font-size: 34rpx;
+	line-height:40rpx;
+	font-weight: bold;
+	margin-bottom: 14rpx;
+}
+
+.tagbox {
+	flex-direction: row;
+}
+
+.label {
+	flex-direction: row;
+	font-size: 20rpx;
+	color: #DF0000;
+	background-color: #FFFFFF;
+	padding: 2rpx 5rpx;
+	margin-right: 18rpx;
+	border-radius: 5rpx;
+	border-style: solid;
+	border-color:  #DF0000;
+	border-width: 1rpx;
+}
+
+.source {
+	color: #AAB0BB;
+	font-size: 24rpx;
+}
+
+.sub-list {
+	margin-bottom: 32rpx;
+}
+
+.sub-title {
+	font-size: 26rpx;
+	position: relative;
+	font-weight: bold;
+	flex-direction: row;
+	align-items: center;
+}
+
+.sub-source {
+	font-size: 18rpx;
+	color: #AAB0BB;
+	padding-left: 26rpx;
+}
+
+.list-original {
+	flex-direction: row;
+}
+
+.left {
+	flex: 1;
+	flex-direction: column;
+	justify-content: space-between;
+}
+.right {
+	flex: 1;
+	flex-direction: column;
+	justify-content: space-between;
+	margin-left: 20rpx;
+}
+.imgbox-left {
+	width: 170rpx;
+	height: 170rpx;
+}
+
+.imgbox {
+	width: 170rpx;
+	height: 170rpx;
+	margin-left: 30rpx;
+}
+
+
+.img {
+	width: 170rpx;
+	height: 170rpx;
+}
+
+.title {
+	font-size: 32rpx;
+	line-height:50rpx;
+	lines:2;
+	text-overflow:ellipsis;
+}
+
+.list-original-con {
+	color: #464646;
+	font-size: 24rpx;
+	margin-bottom: 20rpx;
+	lines:2;
+	text-overflow:ellipsis;
+}
+
+.tagbox {
+	flex-direction: row;
+	margin-bottom: 0;
+	align-items: center;
+}
+.media-item-line {
+	position: absolute;
+	left: 30upx;
+	right: 30upx;
+	bottom: 0;
+	height: 1upx;
+	background-color: #ebebeb;
+}		
+</style>

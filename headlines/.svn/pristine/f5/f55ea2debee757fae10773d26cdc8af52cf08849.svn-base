@@ -1,0 +1,212 @@
+<template>
+	<view class="share-back-view1" @click="cancelFs()">
+		<view class="share-bottom-view1">
+			<view class="share-text1" style="margin-top: 30rpx;" @click.stop="wrapperClick()">分享到</view>
+			<view class="share-view1" @click.stop="wrapperClick()">
+				<view class="share-item1" v-for="(item,index) in shareList" :key="index" @click="shareItemClick(item)">
+					<image class="share-item-image1" :src="item.image"></image>
+					<text class="share-text-detail1">{{item.title}}</text>
+				</view>
+			</view>
+			<view class="share-cancel-button1">取消分享</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	import utils from '@/common/js/util.js';
+	export default {
+		data() {
+			return {
+				shareList: [],
+				type:'',
+				id:'',
+				title:'',
+				href:'',
+				imageUrl:'',
+				mediaUrl:''
+			}
+		},
+		onLoad() {
+			this.clickShare();
+		},
+		onShow(){
+			//监听事件
+			uni.$on('showFX', (data) => {  
+				//console.log("data="+JSON.stringify(data));
+			    this.type = data.type,
+			    this.id = data.id,
+			    this.title = data.title,
+				this.href = data.href,
+			    this.imageUrl = data.imageUrl,
+			    this.mediaUrl = data.mediaUrl
+			}) 
+		},
+		onUnload() {  
+			// 移除监听事件  
+			uni.$off('showFX');  
+		},
+		methods: {
+			wrapperClick(){
+				console.log("阻止了隐藏事件");
+			},
+			//获取分享列表
+			clickShare(){
+				var self = this;
+				self.shareList = [];//置空一次
+				self.shareList = utils.getShareList();
+			},
+			//分享-取消分享
+			cancelFs(){
+				const subNvue = uni.getSubNVueById('videoFX');
+				subNvue.hide()
+			},
+			shareItemClick(item){
+				let that = this;
+				that.cancelFs();//分享成功后，执行一次，隐藏弹窗
+				let webUrl = "";
+				// console.log("item: " + JSON.stringify(item));
+				// console.log(that.type);
+				// console.log(that.title);
+				// console.log(that.href);
+				// console.log(that.imageUrl);
+				// console.log(that.mediaUrl);
+				if(that.type == '0'){
+					webUrl = that.href;
+					if(!that.href || that.href == 'undefined'){
+						uni.showToast({
+							title: '分享失败，分享url不不能为空',
+							icon: 'none',
+							duration: 1500
+						});
+						return false;
+					}
+				}else if(that.type == '4'){
+					webUrl = that.mediaUrl;
+					if(!that.mediaUrl || that.mediaUrl == 'undefined'){
+						uni.showToast({
+							title: '分享失败，分享视频url不不能为空',
+							icon: 'none',
+							duration: 1500
+						});
+						return false;
+					}
+				}
+				//判断点击的是复制链接还是其它
+				if(item.provider === 'copyLink'){
+					//console.log("点击了复制链接");
+					uni.setClipboardData({
+						data:webUrl,
+						success() {
+							console.log("复制成功")
+						}
+					})
+				}else if(item.provider === 'refresh'){
+					console.log("点击了刷新");
+					uni.redirectTo({
+						url:'/pages/release/release',
+						success: () => {
+							console.log("刷新成功");
+						}
+					})
+				}else{
+					//console.log("点击了其它");
+					uni.share({
+						provider: item.provider,
+						scene: item.scene,//必填: provider为weixin时
+						//type: item.scene == 'qq' ? 1 : 0,//选填: 0为图文，qq不支持
+						type: that.type,//0为图文，4为视频
+						title: that.title ? that.title : '',//选填: 
+						//summary: detail.desc,//type=1时必填: 分享内容的摘要
+						href: that.href ? that.href : '',//type=0时必填: 跳转链接
+						imageUrl: that.imageUrl ? that.imageUrl : '',//type=0、2、5时必填: 图片大于20kb时不显示,推荐使用小于20Kb的图片
+						mediaUrl:that.mediaUrl ? that.mediaUrl : '1',//type 为 3、4 时必选: 音视频地址
+						//miniProgram:{},//type 为 5 时必选: 分享小程序必要参数
+						success:function(res){//调用成功
+							console.log("分享调用成功: " + JSON.stringify(res));
+							uni.showToast({
+								title: '分享成功',
+								icon: 'none',
+								duration: 1500
+							})
+						},
+						fail:function(error){//调用失败
+							console.log("分享调用失败: " + JSON.stringify(error));
+						}
+					})
+				}
+				
+				// this.addShareNum();
+			},
+			//分享-分享数加1
+			// addShareNum(){
+			// 	const url = 'api/ncrb/';
+			// 	var sendData = {
+			// 		id:this.shareData.id,
+			// 		mod:'share',
+			// 		action:'view'
+			// 	}
+			// 	requests.post(url, sendData).then(res => {
+			// 		//console.log("res.code: " + JSON.stringify(res.code));
+			// 	})
+			// }
+		}
+	}
+</script>
+
+<style>
+	.share-back-view1{
+		position: fixed;
+		left: 0px;
+		right: 0px;
+		top: 0px;
+		bottom: 0px;
+		background-color: rgba(0, 0, 0, 0.4); 
+	}
+	.share-bottom-view1{
+		position: fixed;
+		width: 750upx;
+		bottom: 0upx;
+		background-color: #FFFFFF;
+	}
+	.share-text1{
+		font-size: 24rpx;
+		color: #FF0000;
+		margin-top: 30rpx;
+		align-items: center;
+		justify-content: center;
+	}
+	.share-view1{
+		margin-left: 25upx;
+		padding: 60upx 0upx ;
+		flex-direction: row; /* 灵活的项目将水平显示(属性规定灵活项目的方向)  */
+		align-items: center; /* 元素位于容器的中心。(属性定义flex子项在flex容器的当前行的侧轴（纵轴）方向上的对齐方式。)) */
+		justify-content: center; /* 项目位于容器的中心(用于设置或检索弹性盒子元素在主轴（横轴）方向上的对齐方式) */
+	}
+	.share-item1{
+		width: 150upx;
+		height: 150upx;
+		align-items: center;
+	}
+	.share-item-image1{
+		width: 100upx;
+		height: 100upx;
+		padding: 10upx;
+	}
+	.share-text-detail1{
+		font-size: 28rpx;
+		color: #000000;
+	}
+	.share-cancel-button1{
+		border-top-style: solid;
+		border-top-width: 2upx;
+		border-top-color: #F5F5F5;
+		width: 750upx;
+		height: 100upx;
+		line-height: 100upx;
+		font-size: 22upx;
+		color: #000000;
+		align-items: center;
+		justify-content: center;
+	}
+</style>

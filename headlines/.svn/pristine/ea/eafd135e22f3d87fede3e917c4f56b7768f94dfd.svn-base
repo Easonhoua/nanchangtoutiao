@@ -1,0 +1,600 @@
+<template>
+	<view class="page-news header-tab-con">
+		<uni-list class="listview" :enableBackToTop="true" :scroll-y="true" @scrolltolower="loadMore()">
+			<uni-refresh class="refresh" @refresh="onrefresh" @pullingdown="onpullingdown" :display="refreshing ? 'show' : 'hide'">
+				<div class="refresh-view">
+					<image class="refresh-icon" :src="refreshIcon" :style="{width: (refreshing || pulling) ? 0: '32px'}" :class="{'refresh-icon-active': refreshFlag}"></image>
+					<uni-load-more v-if="refreshing" class="loading-icon" status="loading" :contentText="loadingMoreText"></uni-load-more>
+					<text class="loading-text">{{refreshText}}</text>
+				</div>
+			</uni-refresh>
+			<uni-cell v-if="slidelItem" class="top-scroll">
+				<news-slidel-item class="top-scroll" ref="itemPage" :newsItem="slidelItem" @click="goDetail(item)"></news-slidel-item>
+			</uni-cell>
+			<uni-cell>
+				<view class="home-iconbox">
+					<view class="home-icon-item" @click="goRetrieval()">
+						<image class="home-icon" src="../../static/img/home/wz_icon_n1@3x.png"></image>
+						<text class="home-icon-txt">文件检索</text>
+					</view>
+					<view class="home-icon-item" @click="goComplaint()">
+						<image class="home-icon" src="../../static/img/home/wz_icon_n2@3x.png"></image>
+						<text class="home-icon-txt">问政南昌</text>
+					</view>
+					<view class="home-icon-item" @click="goAffairs()">
+						<image class="home-icon" src="../../static/img/home/wz_icon_n3@3x.png"></image>
+						<text class="home-icon-txt">政务指数</text>
+					</view>
+					<view class="home-icon-item" @click="goTypicalCase()">
+						<image class="home-icon" src="../../static/img/home/wz_icon_n4@3x.png"></image>
+						<text class="home-icon-txt">典型案例</text>
+					</view>
+				</view>
+				<view class="line20"></view>
+			</uni-cell>
+			<uni-cell>
+				<view class="ly-listbox">
+					<view class="message-show">
+						<view class="message-show-left">
+							<text class="txt-top">留言</text>
+							<text class="txt-bottom">选登</text>
+						</view>
+						<swiper class="screen-swiper" :class="dotStyle?'square-dot':'round-dot'" :indicator-dots="false" :circular="true"
+						 :vertical="true" :autoplay="true" interval="3000" current="0" duration="500">
+							<swiper-item style="justify-content: center;
+									  align-items: flex-start;"
+							 v-for="(item,index) in swiperList" :key="index" @click="toInquireDetail(item.id)">
+								<view>
+									<text class="message-show-righttxt">{{item.title}}</text>
+								</view>
+							</swiper-item>
+						</swiper>
+					</view>
+				</view>
+				<view class="line20"></view>
+			</uni-cell>
+			<!-- 留言选登结束 -->
+			<uni-cell>
+				<view class="videolist-title">
+					<image class="videolist-title-pic" src="../../static/img/home/video_title@3x.png"></image>
+				</view>
+			</uni-cell>
+			<!-- 列表结束 -->
+			<uni-cell v-for="(item, index) in dataList" :key="item.id">
+				<news-video-item v-if="item.style == 'video'" :newsItem="item" newsNick="true" @click="goDetail(item)"
+				 v-on:videoPlay="videoPlay"></news-video-item>
+				<news-inquire-bigpic-item v-else-if="item.style == 'bigpic'|| item.style=='h5_bigpic' || item.style=='h5_bigpic'" :newsItem="item" @click="goDetail(item)"></news-inquire-bigpic-item>
+				<news-pics-item v-else-if="item.style == 'pics'" :newsItem="item" newsNick="true" @click="goDetail(item)"></news-pics-item>
+				<news-item v-else :newsItem="item" @click="goDetail(item)"></news-item>
+			</uni-cell>
+			<uni-cell v-if="(isLoading || dataList.length > 4)&&!isNoData">
+				<view class="loading-more">
+					<text class="loading-more-text">{{loadingText}}</text>
+				</view>
+			</uni-cell>
+		</uni-list>
+	</view>
+</template>
+
+<script>
+	import api from "../../api/index.js"
+	import utils from '@/common/js/util.js';
+	import uniList from '@/components/uni-list.vue';
+	import uniCell from '@/components/uni-cell.vue';
+	import uniRefresh from '@/components/uni-refresh.vue';
+	import uniLoadMore from '@/components/uni-load-more.vue';
+	import noData from '@/components/nodata.nvue';
+	import newsItem from '@/components/item-list/news-item.nvue';
+	import newsVideoItem from '@/components/item-list/news-video-item.nvue';
+	import newsPicsItem from '@/components/item-list/news-pics-item.nvue';
+	import newsInquireBigpicItem from '@/components/item-list/news-inquire-bigpic-item.nvue';
+	import newsSlidelItem from '@/components/item-list/news-slide-item.vue';
+	export default {
+		components: {
+			uniList,
+			uniCell,
+			uniRefresh,
+			uniLoadMore,
+			noData,
+			newsItem,
+			newsVideoItem,
+			newsPicsItem,
+			newsInquireBigpicItem,
+			newsSlidelItem
+		},
+		props: {
+			nid: {
+				type: [Number, String],
+				default: ''
+			}
+		},
+		data() {
+			return {
+				dataList: [],
+				slidelItem: null,
+				tag: '',
+				navigateFlag: false,
+				pulling: false,
+				refreshing: false,
+				refreshFlag: false,
+				refreshText: "",
+				isLoading: false,
+				loadingText: '加载中...',
+				isNoData: false,
+				pageNo: 0,
+				loadnum: 0,
+				tpp: 10,
+				angle: 0,
+				loadingMoreText: {
+					contentdown: '',
+					contentrefresh: '',
+					contentnomore: ''
+				},
+				refreshIcon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5QTFRFcHBw3Nzct7e39vb2ycnJioqK7e3tpqam29vb////D8oK7wAAAAp0Uk5T////////////ALLMLM8AAABxSURBVHja7JVBDoAgDASrjqj//7CJBi90iyYeOHTPMwmFZrHjYyyFYYUy1bwUZqtJIYVxhf1a6u0R7iUvWsCcrEtwJHp8MwMdvh2amHduiZD3rpWId9+BgPd7Cc2LIkPyqvlQvKxKBJ//Qwq/CacAAwDUv0a0YuKhzgAAAABJRU5ErkJggg==",
+				videoContextList: {},
+				videoContext: '',
+				swiperList: [],
+				cardCur: 0,
+				dotStyle: false,
+				towerStart: 0,
+				direction: ''
+			};
+		},
+		onLoad() {
+			// 初始化towerSwiper 传已有的数组名即可
+		},
+		created() {
+			this.pullTimer = null;
+			var _this = this;
+			console.log(_this.nid);
+			this.requestParams = {
+				type: 21,
+				loadnum: _this.loadnum,
+				tpp: _this.tpp
+			};
+			this.currDate = utils.formatYearMinutesDay(Date.now());
+			this.weekday = utils.getDateWeekend(Date.now());
+		},
+		methods: {
+			loadInquireData() {
+				let url = "api/ncrb/";
+				var requestInquireParams = {
+					action: 'wenzheng',
+					type: 10,
+					loadnum: 0,
+					tpp: 3
+				};
+				api.get(url,requestInquireParams).then(result =>{
+					const data = result.data;
+					this.swiperList = data.map((news) => {
+						news.id = news.id;
+						news.datetime = utils.friendlyDate(news.dateline + "000");
+						news.time = utils.formatMinutesTime(news.dateline + "000");
+						return news;
+					});
+				});	
+			},
+			loadData(refresh) {
+				this.loadInquireData();
+				var _this = this;
+				if (this.isLoading) {
+					return;
+				}
+				if (refresh) {
+					_this.dataList = [];
+					_this.pageNo = 0;
+					_this.loadnum = 0;
+					_this.requestParams.loadnum = 0;
+					this.isNoData = false;
+				}
+				this.isLoading = true;
+				this.requestParams.tag = this.tag;
+				this.requestParams.time = new Date().getTime() + '';
+				var startTime = new Date();
+				
+				var url = 'api/ncrb/';
+				api.get(url,_this.requestParams).then(result =>{
+					if(result.code === 200){
+						const data = result.data;
+						_this.isNoData = (data.length <= 0);
+						var data_list = [];
+						if (!_this.isNoData) {
+							data_list = data.map((news) => {
+								news.id = news.id;
+								news.datetime = utils.friendlyDate(news.dateline + "000");
+								news.time = utils.formatMinutesTime(news.dateline + "000");
+						
+								if (news.videolist && news.videolist.length > 0) {
+									news.video_url = news.videolist[0];
+								}
+								if (news.style == 'video') {
+									var video = uni.createVideoContext(news.id);
+									_this.videoContextList[news.id] = video;
+								}
+						
+								return news;
+							});
+							var firstData = data_list[0];
+							if (firstData.style == 'slide') {
+								_this.slidelItem = null;
+								_this.slidelItem = data_list.shift();
+							}
+						
+							if (refresh) {
+								_this.dataList = data_list;
+							} else {
+								_this.dataList = _this.dataList.concat(data_list);
+								_this.dataList = utils.unique(_this.dataList,"id");
+								
+							}
+							_this.pageNo += 1;
+							_this.loadnum = _this.pageNo * _this.tpp;
+							_this.requestParams.loadnum = _this.loadnum;
+							console.log(_this.pageNo,_this.loadnum,_this.requestParams.loadnum)
+						}
+					}else{
+						if (_this.dataList.length == 0) {
+							_this.isNoData = true;
+						}
+					}
+					_this.isLoading = false;
+					if (refresh) {
+						_this.refreshing = false;
+						_this.refreshFlag = false;
+						_this.refreshText = "已刷新";
+						_this.pulling = false;
+						if (_this.pullTimer) {
+							clearTimeout(_this.pullTimer);
+						}
+						_this.pullTimer = setTimeout(() => {
+							_this.pulling = false;
+						}, 1000);
+					}
+				}).catch(response => {
+					_this.isLoading = false;
+					console.log(response);
+					if (_this.dataList.length == 0) {
+						_this.isNoData = true;
+					}
+				});
+			},
+			clear() {},
+			loadMore(e) {
+				if (!this.isNoData) {
+					this.loadData();
+				}
+			},
+			refreshData() {
+				if (this.isLoading) {
+					return;
+				}
+				this.pulling = true;
+				this.refreshing = true;
+				this.refreshText = "正在刷新...";
+				this.loadData(true);
+			},
+			onrefresh(e) {
+				this.refreshData();
+			},
+			onpullingdown(e) {
+				// if (this.refreshing) {
+				// 	return;
+				// }
+				this.pulling = false;
+				if (Math.abs(e.pullingDistance) > Math.abs(e.viewHeight)) {
+					this.refreshFlag = true;
+					this.refreshText = "释放立即刷新";
+				} else {
+					this.refreshFlag = false;
+					this.refreshText = "下拉可以刷新";
+				}
+			},
+			gotoInquire() {
+				uni.navigateTo({
+					url: '/pages/inquire/inquireDetails'
+				})
+			},
+			goDetail(detail) {
+				if (this.navigateFlag) {
+					return;
+				}
+				this.navigateFlag = true;
+
+				utils.gotoDetail(detail);
+				setTimeout(() => {
+					this.navigateFlag = false;
+				}, 200)
+			},
+			goComplaint() {
+				uni.navigateTo({
+					url: '/pages/inquire/inquireList'
+				});
+			},
+			goRetrieval() {
+				uni.navigateTo({
+					url: '/pages/inquire/retrievalList'
+				});
+			},
+			goTypicalCase() {
+				uni.navigateTo({
+					url: '/pages/inquire/typicalCaseList'
+				});
+			},
+			goAffairs() {
+				utils.gotoWebView("https://ms.ncnews.com.cn/iapp/?action=rank", "政务指数");
+			},
+			toInquireDetail(id) {
+				uni.navigateTo({
+					url: '/pages/inquire/details?id=' + id
+				})
+			},
+			videoPlay(item) {
+				if (this.videoContext && item.id != this.videoContext.id) {
+					this.videoContext.pause();
+				}
+				var video = this.videoContextList[item.id];
+				this.remarkVideo(video);
+			},
+			remarkVideo(video) {
+				this.videoContext = video;
+			}
+		}
+	}
+</script>
+
+<style>
+	.top-scroll {
+		background-color: #FFFFFF;
+		flex-direction: column;
+		z-index: 99;
+		position: relative;
+		top: 0;
+	}
+	
+	.screen-swiper {
+		height: 100rpx;
+		width: 600rpx;
+		align-items: center;
+	}
+
+	.line20 {
+		height: 20rpx;
+		background-color: #EEEEEE;
+	}
+
+	.banner {
+		padding: 20rpx;
+	}
+
+	.banner-img {
+		height: 312rpx;
+		width: 702rpx;
+		border-radius: 10rpx;
+	}
+
+	.home-iconbox {
+		flex-direction: row;
+		justify-content: space-between;
+		padding: 12rpx 70rpx 30rpx 60rpx;
+		margin-top: 10rpx;
+	}
+
+	.home-icon-item {
+		align-items: center;
+	}
+
+	.home-icon {
+		width: 68rpx;
+		height: 68rpx;
+		margin-bottom: 10rpx;
+	}
+
+	.home-icon-txt {
+		font-size: 26rpx;
+		color: #226888;
+	}
+
+	.imgbox {
+		width: 212rpx;
+		height: 150rpx;
+		margin-left: 20rpx;
+	}
+
+	.refresh {
+		justify-content: center;
+	}
+
+	.refresh-view {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		width: 750rpx;
+		height: 64px;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.refresh-icon {
+		width: 32px;
+		height: 32px;
+		transition-duration: .5s;
+		transition-property: transform;
+		transform: rotate(0deg);
+		transform-origin: 15px 15px;
+	}
+
+	.refresh-icon-active {
+		transform: rotate(180deg);
+	}
+
+	.loading-icon {
+		width: 28px;
+		height: 28px;
+		margin-right: 5px;
+		color: gray;
+	}
+
+	.loading-text {
+		margin-left: 2px;
+		font-size: 16px;
+		color: #999999;
+	}
+
+	.loading-more {
+		align-items: center;
+		justify-content: center;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		text-align: center;
+	}
+
+	.loading-more-text {
+		font-size: 28upx;
+		color: #999;
+	}
+
+	.list-block {
+		flex-direction: column;
+		padding: 24rpx;
+	}
+
+	.title {
+		lines: 2;
+		text-overflow: ellipsis;
+		margin-bottom: 30rpx;
+		font-size: 32rpx;
+	}
+
+
+	.txt {
+		margin-right: 100rpx;
+		font-size: 24rpx;
+		color: #AAB0BB;
+	}
+
+
+	.imgbox-more {
+		margin-bottom: 24rpx;
+		flex-direction: row;
+		flex-wrap: nowrap;
+	}
+
+	.img {
+		width: 210rpx;
+		height: 177rpx;
+		margin-right: 30rpx;
+	}
+
+	.ly-listbox {
+		background-color: #fff;
+		padding: 30rpx;
+	}
+
+	.message-show {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.message-show-left {
+		width: 94rpx;
+		height: 94rpx;
+		border-style: solid;
+		border-width: 1rpx;
+		border-color: #dbd9d9;
+		font-size: 24rpx;
+		border-radius: 5rpx;
+		margin-right: 30rpx;
+	}
+
+	.txt-top {
+		height: 47rpx;
+		line-height: 47rpx;
+		background-color: #eef3fc;
+		color: #034b8e;
+		text-align: center;
+		font-size: 26rpx;
+	}
+
+	.txt-bottom {
+		height: 47rpx;
+		line-height: 47rpx;
+		background-color: #FFFFFF;
+		color: #034b8e;
+		text-align: center;
+		font-size: 26rpx;
+	}
+
+	.message-show-righttxt {
+		padding-top: 10rpx;
+		flex: 1;
+		lines: 3;
+		text-overflow: ellipsis;
+		font-size: 30rpx;
+		margin-right: 20rpx;
+		line-height: 40rpx;
+	}
+
+	.videolist {
+		margin-top: 30upx;
+		padding: 0upx 30upx;
+	}
+
+
+	.video {
+		width: 690upx;
+		height: 389upx;
+	}
+
+	.video-title {
+		margin-bottom: 30upx;
+		font-size: 30rpx;
+	}
+
+	.bt-bar {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding-bottom: 20rpx;
+	}
+
+	.videolist-txt {
+		flex-direction: row;
+		align-items: center;
+		color: #9f9f9f;
+		font-size: 24rpx;
+	}
+
+	.videolist-iconbox {
+		flex-direction: row;
+		margin-left: 30rpx;
+		align-items: center;
+	}
+
+	.videolist-icon {
+		width: 30upx;
+		height: 30upx;
+		margin-right: 5upx;
+		margin-top: -5upx;
+	}
+
+	.picbox {
+		height: 392rpx;
+		background-color: #f3f5f7;
+		margin-bottom: 20rpx;
+	}
+
+	.pic {
+		height: 392rpx;
+	}
+
+	.videolist-title {
+		padding: 30rpx 30rpx 0 30rpx;
+	}
+
+	.videolist-title-pic {
+		width: 133rpx;
+		height: 32rpx;
+	}
+</style>

@@ -1,0 +1,239 @@
+<template>
+	<div>
+		<view class="banner">
+			<image class="banner-img" src="../../static/img/home/wz_banner@3x.png"></image>
+		</view>
+		<view class="line20"></view>
+		<view class="home-iconbox">
+			<view class="home-icon-item">
+				<image class="home-icon" src="../../static/img/home/wz_icon1@3x.png"></image>
+				<text class="home-icon-txt">投诉建议</text>
+			</view>
+			<view class="home-icon-item">
+				<image class="home-icon" src="../../static/img/home/wz_icon2@3x.png"></image>
+				<text class="home-icon-txt">投诉建议</text>
+			</view>
+			<view class="home-icon-item">
+				<image class="home-icon" src="../../static/img/home/wz_icon3@3x.png"></image>
+				<text class="home-icon-txt">投诉建议</text>
+			</view>
+			<view class="home-icon-item">
+				<image class="home-icon" src="../../static/img/home/wz_icon4@3x.png"></image>
+				<text class="home-icon-txt">投诉建议</text>
+			</view>
+		</view>
+		<view class="line20"></view>
+		<view class="servicebox">
+			<text class="service-title">民生服务</text>
+			<view class="servicebox-con">
+				<image class="service-icon" src="../../static/img/home/wz_s_icon1@3x.png"></image>
+				<image class="service-icon" src="../../static/img/home/wz_s_icon2@3x.png"></image>
+				<image class="service-icon" src="../../static/img/home/wz_s_icon3@3x.png"></image>
+			</view>
+		</view>
+		<view class="line20"></view>
+		<view class="listbox">
+			<view class="list">
+				<view class="left-txt">
+					<text class="list-title">【投诉】天祥大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正</text>
+					<view class="source">
+						<view class="user">
+							<image class="source-icon" src="../../static/img/home/home_icon3@3x.png"></image>
+							<text class="source-txt">admin</text>
+						</view>
+						<text class="source-time">1小时前</text>
+					</view>
+				</view>
+				<view class="imgbox">
+					<image class="imgbox-img" src="../../static/img/home/gs_img@3x.png"></image>
+				</view>
+				<view class="media-item-line" style="position: absolute;"></view>
+			</view>
+			<view class="list">
+				<view class="left-txt">
+					<text class="list-title">【投诉】天祥大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正</text>
+					<view class="source">
+						<view class="user">
+							<image class="source-icon" src="../../static/img/home/home_icon3@3x.png"></image>
+							<text class="source-txt">admin</text>
+						</view>
+						<text class="source-time">1小时前</text>
+					</view>
+				</view>
+				<view class="imgbox">
+					<image class="imgbox-img" src="../../static/img/home/gs_img@3x.png"></image>
+				</view>
+				<view class="media-item-line" style="position: absolute;"></view>
+			</view>
+			<view class="list">
+				<view class="left-txt">
+					<text class="list-title">【投诉】天祥大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正</text>
+					<view class="source">
+						<view class="user">
+							<image class="source-icon" src="../../static/img/home/home_icon3@3x.png"></image>
+							<text class="source-txt">admin</text>
+						</view>
+						<text class="source-time">1小时前</text>
+					</view>
+				</view>
+				<view class="imgbox">
+					<image class="imgbox-img" src="../../static/img/home/gs_img@3x.png"></image>
+				</view>
+				<view class="media-item-line" style="position: absolute;"></view>
+			</view>
+			<view class="list">
+				<view class="left-txt">
+					<text class="list-title">【投诉】天祥大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正</text>
+					<view class="source">
+						<view class="user">
+							<image class="source-icon" src="../../static/img/home/home_icon3@3x.png"></image>
+							<text class="source-txt">admin</text>
+						</view>
+						<text class="source-time">1小时前</text>
+					</view>
+				</view>
+				<view class="imgbox">
+					<image class="imgbox-img" src="../../static/img/home/gs_img@3x.png"></image>
+				</view>
+				<view class="media-item-line" style="position: absolute;"></view>
+			</view>
+			<view class="list">
+				<view class="left-txt">
+					<text class="list-title">【投诉】天祥大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正</text>
+					<view class="source">
+						<view class="user">
+							<image class="source-icon" src="../../static/img/home/home_icon3@3x.png"></image>
+							<text class="source-txt">admin</text>
+						</view>
+						<text class="source-time">1小时前</text>
+					</view>
+				</view>
+				<view class="imgbox">
+					<image class="imgbox-img" src="../../static/img/home/gs_img@3x.png"></image>
+				</view>
+				<view class="media-item-line" style="position: absolute;"></view>
+			</view>
+			<view class="list">
+				<view class="left-txt">
+					<text class="list-title">【投诉】天祥大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正大道与紫阳大道交汇处道路多坑洼，久未修正</text>
+					<view class="source">
+						<view class="user">
+							<image class="source-icon" src="../../static/img/home/home_icon3@3x.png"></image>
+							<text class="source-txt">admin</text>
+						</view>
+						<text class="source-time">1小时前</text>
+					</view>
+				</view>
+				<view class="imgbox">
+					<image class="imgbox-img" src="../../static/img/home/gs_img@3x.png"></image>
+				</view>
+				<view class="media-item-line" style="position: absolute;"></view>
+			</view>
+		</view>
+	</div>
+</template>
+
+<script>
+	export default {
+		
+	}
+</script>
+
+<style>
+.line20{
+	height:20rpx;
+	background-color: #EEEEEE;
+}
+.banner-img{
+	height:323rpx;
+	margin-top:20rpx;
+}
+.home-iconbox{
+	flex-direction: row;
+	justify-content: space-between;
+	padding:30rpx 45rpx;
+}
+.home-icon-item{
+	align-items: center;
+}
+.home-icon{
+	width:68rpx;
+	height:68rpx;
+	margin-bottom:10rpx;
+}
+.home-icon-txt{
+	font-size: 26rpx;
+	color: #226888;
+}
+.service-title{
+	font-size:28rpx;
+	padding:24rpx;
+}
+.servicebox-con{
+	flex-direction: row;
+	justify-content: space-between;
+	padding:0 24rpx 24rpx 24rpx;
+}
+.service-icon{
+	width:209rpx;
+	height:203rpx;
+}
+.listbox{
+	padding:24rpx;
+}
+.list{
+	flex-direction: row;
+	padding:30rpx 0;
+}
+.left-txt{
+	flex: 1;
+}
+.imgbox{
+	width:212rpx;
+	height:150rpx;
+	margin-left:20rpx;
+}
+.imgbox-img{
+	width:212rpx;
+	height:150rpx;
+}
+.list-title{
+	font-size:30rpx;
+	lines: 2;
+	text-overflow: ellipsis;
+	height:100rpx;
+}
+.source{
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}
+.user{
+	flex-direction: row;
+	align-items: center;
+	flex: 1;
+}
+.source-icon{
+	width:45rpx;
+	height:45rpx;
+	margin-right: 8rpx;
+}
+.source-time{
+	font-size: 24rpx;
+	color:#AAB0BB;
+}
+.source-txt{
+	font-size: 24rpx;
+	color:#AAB0BB;
+}
+ .media-item-line {
+        position: absolute;
+        left: 30upx;
+        right: 30upx;
+        bottom: 0;
+        height: 1upx;
+        background-color: #ebebeb;
+		transform-origin: 0 0;
+		transform: scaleY(0.5);
+    }
+</style>

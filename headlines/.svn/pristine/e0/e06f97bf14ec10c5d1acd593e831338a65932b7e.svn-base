@@ -1,0 +1,125 @@
+<template>
+	<div class="blogger">
+		<view class="bgbox">
+			<image class="bg" src="../../../static/img/common/b_top_bg@3x.png" mode="aspectFill"></image>
+		</view>
+		<view class="main">
+			<view class="header">
+				<image class="header-icon" src="../../../static/img/common/w_back@3x.png"></image>
+				<image class="header-icon" src="../../../static/img/common/w_fx@3x.png"></image>
+			</view>
+			<view class="user">
+				<view class="user-left">
+					<image class="logo" src="../../../static/img/home/home_icon5@3x.png"></image>
+					<text class="user-txt">南昌发布</text>
+				</view>
+				<text class="attention">已关注</text>
+			</view>
+			<view class="tab">
+				<view class="item">
+					<text class="item-txt active">全部</text>
+					<view class="line"></view>
+				</view>
+				<view class="item">
+					<text class="item-txt">文章</text>
+				</view>
+				<view class="item">
+					<text class="item-txt">视频</text>
+				</view>
+			</view>
+			<view class="tab-con">列表</view>
+		</view>
+	</div>
+</template>
+
+<script>
+	export default {
+		
+	}
+</script>
+<style>
+	.blogger{
+	}
+	.bgbox{
+		/* height:800rpx; */
+	}
+	.bg{
+		height:242rpx;
+		position: relative;
+	}
+.header{
+	flex-direction: row;
+	justify-content: space-between;
+	padding:30rpx;
+}
+.header-icon{
+	width:40rpx;
+	height:40rpx;
+}
+.user{
+	flex-direction: row;
+}
+.user-left{
+	flex: 1;
+}
+.main{
+	/* position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	bottom: 0;
+	padding-top:30rpx; */
+	margin-top:-220rpx;
+}
+.user{
+	flex-direction: row;
+	padding:0 30rpx 20rpx 30rpx;
+	align-items: center;
+}
+.user-left{
+	flex: 1;
+	flex-direction: row;
+	align-items: center;
+}
+.logo{
+	width:106rpx;
+	height:106rpx;
+	margin-right:10rpx;
+}
+.user-txt{
+	font-size:30rpx;
+	color:#FFFFFF;
+}
+.attention{
+	border-width: 1rpx;
+	border-style: solid;
+	border-color: #FFFFFF;
+	color:#e5e5e5;
+	padding:6rpx 20rpx;
+	font-size:22rpx;
+	border-radius:5rpx;
+}
+.tab{
+	flex-direction: row;
+	padding:30rpx 60rpx;
+	justify-content: space-between;
+}
+.item-txt{
+	font-size: 36rpx;
+	color:#000000;
+	margin-bottom:10rpx;
+}
+.item{
+	justify-content: center;
+	align-items: center;
+}
+.active{
+	color:#E00000;
+}
+.line{
+	width: 37rpx;
+	height:5rpx;
+	border-radius: 10rpx;
+	background-color: #E00000;
+}
+</style>

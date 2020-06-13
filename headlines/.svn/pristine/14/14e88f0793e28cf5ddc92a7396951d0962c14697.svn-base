@@ -1,0 +1,125 @@
+<template>
+	<view class="">
+		<view style="text-align: center;margin-top: 200rpx;">
+			请点击下面图标绑定微信
+		</view>
+		<view class="auth-view">
+			<image class="auth-image" src="/static/img/user/login-weixin.png" @click="oauthLogin()"></image>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				data:{
+					unionid: '',
+					appopenid: '',
+					nickname: '',
+					headimgurl: '',
+					sex: '',
+					city: '',
+					province: '',
+					country: ''
+				}
+			}
+		},
+		onLoad(option) {
+			uni.removeStorageSync("unionid");//清空unionid(当且仅当获取微信授权后，才能拿到unionid)
+		},
+		methods: {
+			//微信鉴权登录
+			oauthLogin(){
+				var self = this;
+				uni.getProvider({
+					service: 'oauth',
+					success:function(res){
+						//console.log("获取服务商："+res.provider);
+						if(~res.provider.indexOf('weixin')){
+							uni.login({
+								provider:'weixin',
+								success:function(loginRes){
+									//console.log("鉴权登录："+res.provider);
+									uni.getUserInfo({
+										provider: 'weixin',
+										success:function(infoRes){
+											//console.log("infoRes="+infoRes);
+											//console.log("infoResJSON: " + JSON.stringify(infoRes));
+											//console.log('userInfo='+infoRes.userInfo);
+											//console.log("userInfo: " + JSON.stringify(infoRes.userInfo));
+											self.data.appopenid = infoRes.userInfo.openId;
+											self.data.nickname = infoRes.userInfo.nickName;
+											self.data.headimgurl = infoRes.userInfo.avatarUrl;
+											// self.data.sex = infoRes.userInfo.sex;
+											self.data.city = infoRes.userInfo.city;
+											self.data.province = infoRes.userInfo.province;
+											self.data.country = infoRes.userInfo.country;
+											self.data.unionid = infoRes.userInfo.unionId;
+											//console.log("data = ",self.data);
+											self.bindWX();
+										}
+									})
+								}
+							})
+						}
+					}
+				})
+			},
+			//绑定微信
+			bindWX(){
+				console.log("this.data="+this.data);
+				let url = "api/ncrb/";
+				let sendData = {
+					action: "wxbind",
+					unionid: this.data.unionid,
+					appopenid: this.data.appopenid,
+					nickname: this.data.nickname,
+					headimgurl: this.data.headimgurl,
+					sex: this.data.sex,
+					city: this.data.city,
+					province: this.data.province,
+					country: this.data.country
+				}
+				//console.log("请求参数：" + JSON.stringify(sendData));
+				this.request.post(url,sendData).then(res =>{
+					console.log("成功结果: " + JSON.stringify(res));
+					if(res.code === 200){
+						uni.setStorageSync("unionid",this.data.unionid);
+						this.request.toastTips(res.message);
+						//绑定成功后跳转用户信息界面
+						this.readUserInfo();
+					}
+				}).catch(response =>{//请求异常
+					console.log("失败结果: " + JSON.stringify(response));
+					this.request.toastTips("微信绑定失败！");
+				})
+			},
+			//读取用户信息
+			readUserInfo(){
+				this.request.getUserInfo().then(res=>{
+					uni.switchTab({
+						url:"/pages/user/user"
+					})
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+	.auth-view {
+		position: fixed;
+		left: 300rpx;
+		top: 500rpx;
+		width: 125rpx;
+		display: flex;
+		flex-direction: row;
+	}
+	.auth-image {
+		width: 120rpx;
+		height: 120rpx;
+		border-radius: 120rpx;
+		border:1rpx solid rgba(63,221,40,1);
+	}
+</style>

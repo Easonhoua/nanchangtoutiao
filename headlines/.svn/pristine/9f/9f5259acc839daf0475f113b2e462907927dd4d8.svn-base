@@ -1,0 +1,237 @@
+<template>
+	<view class="commentbox">
+			<view class="status-bar" :style="{'top': (flag ? keyboradheight:'')}"></view>
+			<view class="header" :style="{'top': (flag ? keyboradheight:'')}">
+				<image @click="goback()" class="back" src="/static/img/common/icon_back.png"></image>
+				<image class="logo" src="../../static/img/home/bitmap@3x.png"></image>
+				<view></view>
+			</view>
+			<mescroll-uni @down="downCallBack" @init ="initMescroll" @up="upCallback" top="135rpx" bottom="100rpx" :style="{'top': (flag ? keyboradheight:'')}">
+				<view class="list" v-for="(item,index) in commentList" :key="index" >
+					<image class="logo" :src="item.headimgurl ? item.headimgurl : '../../static/img/home/home_icon5@3x.png'"></image>
+					<view class="righttxt">
+						<view class="name">{{item.nickname}}</view>
+						<!-- <view class="name">{{item.dateline}}</view> -->
+						<view class="txt">{{item.content}}</view>
+						<view style="margin-top: 12rpx;">
+							<view class="comment-time">{{item.dateline}}</view>
+							<view class="comment-hf">{{item.hfnum}}回复</view>
+						</view>
+					</view>
+					<view class="media-item-line" style="position: absolute;"></view>
+				</view>
+			</mescroll-uni>
+		<!-- 弹窗 -->
+		<uni-popup ref="popup" type="bottom" @change="changPopup">
+			<view class="bt-bar bt-bar-cl">
+				<view class="btn-top">
+					<text class="popupBtn" @click="hidePopup">取消</text>
+					<text class="popupBtn" @click="addComment">确定</text>
+				</view>
+				<view class="uni-textarea">
+					<textarea v-model="content" auto-height @blur="lostfocus"  @focus="getfocus" placeholder="写评论" placeholder-style="color:#8c8b8a;"></textarea>
+				</view>
+			</view>
+		</uni-popup>
+		<view v-if="!showPopup" class="comment-bottom" @click="openPopup">
+			<view class="comment-inputbox">
+				<input class="comment-input" disabled="disabled"  placeholder="写评论"  placeholder-style="color:#8c8b8a;" />
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	import uniPopup from "@/components/uni-popup/uni-popup.vue"
+	import utils from '@/common/js/util.js';
+	export default {
+		components: {
+			uniPopup
+		},
+		data() {
+			return {
+				id:'',
+				commentList:[],
+				mescroll: '',
+				content:'',
+				pid:0,
+				flag: false,
+				keyboradheight:'',
+				showPopup:false,
+				setFocus:false
+			}
+		},
+		onLoad(e) {
+			if(e.id){
+				this.id = e.id;
+			}
+		},
+		onHide() {
+			uni.hideKeyboard();
+		},
+		methods:{
+			changPopup(){
+				this.showPopup = !this.showPopup;
+			},
+			//弹窗
+			openPopup(value){
+				console.log("value=",value);
+				if(!value){
+					return false;
+				}
+				this.setFocus = true;
+				this.$refs.popup.open();
+			},
+			//弹窗-取消
+			hidePopup(){
+				this.setFocus = false;
+				this.$refs.popup.close();
+			},
+			getfocus(e){
+				this.flag = true
+				this.keyboradheight = e.detail.height - 10 +'px'
+			},
+			lostfocus(){
+				this.flag = false
+			},
+			initMescroll(mescroll){
+				this.mescroll = mescroll;
+			},
+			downCallBack(mescroll)
+			{
+				this.commentList=[];
+				mescroll.resetUpScroll();
+			},
+			upCallback(mescroll)
+			{
+				const url = 'api/ncrb/';
+				let data = {
+					action: "view",
+					mod: 'booklist',
+					id: this.id,
+					loadnum: (mescroll.num-1)*mescroll.size,
+					tpp: mescroll.size
+				};
+				var that = this;
+				this.request.post(url,data,mescroll).then(res=>{
+					if(res.code ==200){
+						that.commentList = [];
+						if (res.data.length > 0) {
+							for(let i=0;i<res.data.length;i++){
+								res.data[i].dateline = utils.friendlyDate(res.data[i].dateline + "000");
+							}
+							that.commentList = that.commentList.concat(res.data); //追加新数据
+							console.log("that.commentList: " + JSON.stringify(that.commentList));
+						}
+					}
+				})
+			},
+			goback(){
+				uni.navigateBack({
+				});
+			},
+			//增加评论
+			addComment(){
+				if(this.request.alreadyLogin()){
+					if(!this.content){
+						this.request.toastTips("请先填写评论信息");
+						return false;
+					}
+					const url = 'api/ncrb/';
+					var sendData = {
+						id:this.id,
+						mod:'book',
+						action:'view',
+						pid:this.pid,
+						content:this.content
+					}
+					//console.log("sendData: " + JSON.stringify(sendData));
+					this.request.post(url, sendData).then(res => {
+						console.log("res: " + JSON.stringify(res));
+						if(res.code == 200){
+							this.request.toastTips(res.message);
+							this.content = '';
+							this.hidePopup();
+							this.downCallBack(this.mescroll);
+						}
+					});
+				}
+			}
+			
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import "../../common/css/common.scss";
+	@import "../../common/css/other.scss";
+	/* 状态栏高度 */
+	.status-bar {
+		/* #ifndef APP-NVUE */
+		height: var(--status-bar-height);
+		/* #endif */
+		width: 750rpx;
+		position: fixed;
+		background-color: #FFFFFF;
+		top: 0;
+		z-index: 3;
+	}
+	.header{
+		padding:0rpx 30rpx 30rpx 30rpx;
+		display: flex;
+		/* #ifndef APP-NVUE */
+		margin-top: var(--status-bar-height);
+		/* #endif */
+		margin-bottom: 30rpx;
+		justify-content: space-between;
+		align-items: center;
+		height: 90rpx;
+	}
+	.noData{
+		text-align: center;
+		margin-top: 200rpx;
+	}
+	.comment-bottom{
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		background: #ffffff;
+		padding: 12px 15px;
+		box-sizing: border-box;
+	}
+	.comment-inputbox{
+		width: 97%;
+		height: 32px;
+	}
+	.comment-input{
+		width: 100%;
+		border: 0.5px solid #bcbcbc;
+		border-radius: 15px;
+		padding-left: 7px;
+		font-size: 13px;
+		height: 30px;
+	}
+	.comment-time{
+		display: inline-block;
+		width: 20%;
+		font-size: 22rpx;
+		color: #9f9f9f;
+	}
+	.comment-hf{
+		display: inline-block;
+		width: 20%;
+		font-size: 22rpx;
+		text-align: center;
+		border-radius: 20rpx;
+		background-color: #E6E6FA;
+		line-height: 40rpx;
+	}
+	.list{
+		position: relative;
+		left: 0;
+		
+	}
+	
+
+</style>

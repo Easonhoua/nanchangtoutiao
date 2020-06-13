@@ -1,0 +1,500 @@
+<template>
+	<view class="page-news header-tab-con">
+		<uni-list class="listview" :enableBackToTop="true" :scroll-y="true" @scrolltolower="loadMore()">
+		    <uni-refresh class="refresh" @refresh="onrefresh" @pullingdown="onpullingdown" :display="refreshing ? 'show' : 'hide'">
+		        <div class="refresh-view">
+		            <image class="refresh-icon" :src="refreshIcon" :style="{width: (refreshing || pulling) ? 0: '32px'}"
+		                :class="{'refresh-icon-active': refreshFlag}"></image>
+		            <uni-load-more v-if="refreshing" class="loading-icon" status="loading" :contentText="loadingMoreText"></uni-load-more>
+		            <text class="loading-text">{{refreshText}}</text>
+		        </div>
+		    </uni-refresh>
+			<uni-cell>
+				<view class="slidebox">
+					<swiper class="screen-swiper" :class="dotStyle?'square-dot':'round-dot'" :indicator-dots="true" :circular="true"
+					 :autoplay="true" interval="5000" duration="500" style="height:312rpx">
+						<swiper-item v-for="(item,index) in swiperList" :key="index">
+							<image class="slidebox-img" :src="item.url" mode="aspectFill" v-if="item.type=='image'"></image>
+							<video :src="item.url" autoplay loop muted :show-play-btn="false" :controls="false" objectFit="cover" v-if="item.type=='video'"></video>
+						</swiper-item>
+					</swiper>
+				</view>
+				<view class="noticebox">
+					<text class="notice-title">公告</text>
+					<view class="notice-con">
+						<text class="notice-time">07:50</text>
+						<text class="notice-txt">【税收政策添动力 复工复产加速跑】用活大数据、退税大提速、办税不见面、税收数据添动力 复工复产加速跑</text>
+					</view>
+				</view>
+				<view class="listbox">
+					<view class="list-title">
+						<view class="line-left"></view>
+						<text class="list-title-txt">联盟快讯</text>
+					</view>
+					<view class="list">
+						<view class="list-con">
+							<text class="list-con-title">南昌市20条硬核举措，助推农村农业经济发展</text>
+							<text class="list-con-time">南昌新闻 2小时前</text>
+						</view>
+						<image class="list-img" src="../../static/img/home/gs_img@3x.png"></image>
+						 <view class="media-item-line" style="position: absolute;"></view>
+					</view>
+					<view class="list">
+						<view class="list-con">
+							<text class="list-con-title">南昌市20条硬核举措，助推农村农业经济发展</text>
+							<text class="list-con-time">南昌新闻 2小时前</text>
+						</view>
+						<image class="list-img" src="../../static/img/home/gs_img@3x.png"></image>
+						 <view class="media-item-line" style="position: absolute;"></view>
+					</view>
+					<view class="list">
+						<view class="list-con">
+							<text class="list-con-title">南昌市20条硬核举措，助推农村农业经济发展</text>
+							<text class="list-con-time">南昌新闻 2小时前</text>
+						</view>
+						<image class="list-img" src="../../static/img/home/gs_img@3x.png"></image>
+						 <view class="media-item-line" style="position: absolute;"></view>
+					</view>
+					<view class="list">
+						<view class="list-con">
+							<text class="list-con-title">南昌市20条硬核举措，助推农村农业经济发展</text>
+							<text class="list-con-time">南昌新闻 2小时前</text>
+						</view>
+						<image class="list-img" src="../../static/img/home/gs_img@3x.png"></image>
+						 <view class="media-item-line" style="position: absolute;"></view>
+					</view>
+					<view class="list">
+						<view class="list-con">
+							<text class="list-con-title">南昌市20条硬核举措，助推农村农业经济发展</text>
+							<text class="list-con-time">南昌新闻 2小时前</text>
+						</view>
+						<image class="list-img" src="../../static/img/home/gs_img@3x.png"></image>
+						 <view class="media-item-line" style="position: absolute;"></view>
+					</view>
+				</view>
+				
+				
+				<view class="listbox">
+					<view class="list-title">
+						<view class="line-left"></view>
+						<text class="list-title-txt">企业数据库</text>
+					</view>
+					<view class="logobox">
+						<image class="logo-item" src="../../static/img/home/b_logo@3x.png"></image>
+						<image class="logo-item" src="../../static/img/home/b_logo@3x.png"></image>
+						<image class="logo-item" src="../../static/img/home/b_logo@3x.png"></image>
+						<image class="logo-item" src="../../static/img/home/b_logo@3x.png"></image>
+						<image class="logo-item" src="../../static/img/home/b_logo@3x.png"></image>
+						<image class="logo-item" src="../../static/img/home/b_logo@3x.png"></image>
+						<image class="logo-item" src="../../static/img/home/b_logo@3x.png"></image>
+						<image class="logo-item" src="../../static/img/home/b_logo@3x.png"></image>
+					</view>
+				</view>
+				<image class="ad" src="../../static/img/home/b_ad@3x.png"></image>
+				<view class="listbox">
+					<view class="list-title">
+						<view class="line-left"></view>
+						<text class="list-title-txt">服务动态</text>
+					</view>
+					<view class="service-box">
+						<view class="service-list">
+							<text class="company">南昌******有限公司</text>
+							<text class="font-grey">申请融资</text>
+							<text class="font-red">100万</text>
+							<text class="font-grey">35分钟前</text>
+							<view class="media-item-line" style="position: absolute;"></view>
+						</view>
+						<view class="service-list">
+							<text class="company">南昌******有限公司</text>
+							<text class="font-grey">申请融资</text>
+							<text class="font-red">100万</text>
+							<text class="font-grey">35分钟前</text>
+							<view class="media-item-line" style="position: absolute;"></view>
+						</view>
+						<view class="service-list">
+							<text class="company">南昌******有限公司</text>
+							<text class="font-grey">申请融资</text>
+							<text class="font-red">100万</text>
+							<text class="font-grey">35分钟前</text>
+							<view class="media-item-line" style="position: absolute;"></view>
+						</view>
+						<view class="service-list">
+							<text class="company">南昌******有限公司</text>
+							<text class="font-grey">申请融资</text>
+							<text class="font-red">100万</text>
+							<text class="font-grey">35分钟前</text>
+							<view class="media-item-line" style="position: absolute;"></view>
+						</view>
+						<view class="service-list">
+							<text class="company">南昌******有限公司</text>
+							<text class="font-grey">申请融资</text>
+							<text class="font-red">100万</text>
+							<text class="font-grey">35分钟前</text>
+							<view class="media-item-line" style="position: absolute;"></view>
+						</view>
+					</view>
+				</view>
+			</uni-cell>
+		    <uni-cell v-if="(isLoading || dataList.length > 4)&&!isNoData">
+		        <view class="loading-more">
+		            <text class="loading-more-text">{{loadingText}}</text>
+		        </view>
+		    </uni-cell>
+		</uni-list>
+		
+	</view>
+</template>
+
+<script>
+	import uniList from '@/components/uni-list.vue';
+	import uniCell from '@/components/uni-cell.vue';
+	import uniRefresh from '@/components/uni-refresh.vue';
+	export default {
+		components: {
+			uniList,
+			uniCell,
+			uniRefresh
+		},
+		data() {
+			return {
+				dataList: [],
+				pulling: false,
+				refreshing: false,
+				refreshFlag: false,
+				refreshText: "",
+				isLoading: false,
+				loadingText: '加载中...',
+				cardCur: 0,
+				swiperList: [{
+					id: 0,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 1,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png',
+				}, {
+					id: 2,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 3,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 4,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 5,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}, {
+					id: 6,
+					type: 'image',
+					url: '../../static/img/home/banner@3x.png'
+				}],
+				dotStyle: false,
+				towerStart: 0,
+				direction: '',
+				refreshIcon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5QTFRFcHBw3Nzct7e39vb2ycnJioqK7e3tpqam29vb////D8oK7wAAAAp0Uk5T////////////ALLMLM8AAABxSURBVHja7JVBDoAgDASrjqj//7CJBi90iyYeOHTPMwmFZrHjYyyFYYUy1bwUZqtJIYVxhf1a6u0R7iUvWsCcrEtwJHp8MwMdvh2amHduiZD3rpWId9+BgPd7Cc2LIkPyqvlQvKxKBJ//Qwq/CacAAwDUv0a0YuKhzgAAAABJRU5ErkJggg=="
+			};
+		},
+		onLoad() {
+			this.TowerSwiper('swiperList');
+			// 初始化towerSwiper 传已有的数组名即可
+		},
+		methods: {
+			loadData(refresh) {
+				console.log("refresh="+refresh);
+				var _this = this;
+				_this.isLoading = false;
+				if (refresh) {
+					_this.refreshText = "已刷新";
+					if (_this.pullTimer) {
+						clearTimeout(_this.pullTimer);
+					}
+					_this.pullTimer = setTimeout(() => {
+						_this.pulling = false;
+						_this.refreshing = false;
+					}, 500);
+				}
+			},
+			clear() {
+			},
+			loadMore(e) {
+			},
+			refreshData() {
+				if (this.isLoading) {
+					return;
+				}
+				this.pulling = true;
+				this.refreshing = true;
+				this.refreshText = "正在刷新...";
+				this.loadData(true);
+			},
+			onrefresh(e) {
+				this.refreshData();
+			},
+			onpullingdown(e) {
+				if (this.refreshing) {
+					return;
+				}
+				this.pulling = false;
+				if (Math.abs(e.pullingDistance) > Math.abs(e.viewHeight)) {
+					this.refreshFlag = true;
+					this.refreshText = "释放立即刷新";
+				} else {
+					this.refreshFlag = false;
+					this.refreshText = "下拉可以刷新";
+				}
+			},
+			DotStyle(e) {
+				this.dotStyle = e.detail.value
+			},
+			// cardSwiper
+			cardSwiper(e) {
+				this.cardCur = e.detail.current
+			},
+			// towerSwiper
+			// 初始化towerSwiper
+			TowerSwiper(name) {
+				let list = this[name];
+				for (let i = 0; i < list.length; i++) {
+					list[i].zIndex = parseInt(list.length / 2) + 1 - Math.abs(i - parseInt(list.length / 2))
+					list[i].mLeft = i - parseInt(list.length / 2)
+				}
+				this.swiperList = list
+			},
+
+			// towerSwiper触摸开始
+			TowerStart(e) {
+				this.towerStart = e.touches[0].pageX
+			},
+
+			// towerSwiper计算方向
+			TowerMove(e) {
+				this.direction = e.touches[0].pageX - this.towerStart > 0 ? 'right' : 'left'
+			},
+
+			// towerSwiper计算滚动
+			TowerEnd(e) {
+				let direction = this.direction;
+				let list = this.swiperList;
+				if (direction == 'right') {
+					let mLeft = list[0].mLeft;
+					let zIndex = list[0].zIndex;
+					for (let i = 1; i < this.swiperList.length; i++) {
+						this.swiperList[i - 1].mLeft = this.swiperList[i].mLeft
+						this.swiperList[i - 1].zIndex = this.swiperList[i].zIndex
+					}
+					this.swiperList[list.length - 1].mLeft = mLeft;
+					this.swiperList[list.length - 1].zIndex = zIndex;
+				} else {
+					let mLeft = list[list.length - 1].mLeft;
+					let zIndex = list[list.length - 1].zIndex;
+					for (let i = this.swiperList.length - 1; i > 0; i--) {
+						this.swiperList[i].mLeft = this.swiperList[i - 1].mLeft
+						this.swiperList[i].zIndex = this.swiperList[i - 1].zIndex
+					}
+					this.swiperList[0].mLeft = mLeft;
+					this.swiperList[0].zIndex = zIndex;
+				}
+				this.direction = ""
+				this.swiperList = this.swiperList
+			},
+		}
+	}
+</script>
+
+
+<style>
+.page-news {
+	flex: 1;
+	flex-direction: column;
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+}	
+.header-tab-con{
+	background-color: #fafafa;
+}
+.slidebox{
+	height:340rpx;
+	padding:20rpx;
+	margin-bottom:20rpx;
+	}
+.slidebox-img{
+	border-radius: 10rpx;
+	width: 710rpx;
+	height:312rpx;
+}
+.notice-title{
+	font-size:30rpx;
+	color: #000000;
+	padding:0 20rpx;
+	margin-bottom:10rpx;
+}
+.notice-con{
+	background-color: #FFFFFF;
+	flex-direction: row;
+	padding:20rpx;
+	justify-content: space-between;
+}
+.notice-time{
+	font-size: 22rpx;
+	font-weight: bold;
+}
+.notice-txt{
+	width:620rpx;
+	font-size: 24rpx;
+}
+.listbox{
+	margin-top:30rpx;
+}
+.list{
+	flex-direction: row;
+	padding:20rpx;
+	margin-bottom:20rpx;
+}
+.list-con-title{
+	font-size: 30rpx;
+	font-weight: bold;
+	margin-bottom:40rpx;
+}
+.list-con{
+	flex: 1;
+	position: relative;
+}
+
+.list-title{
+	flex-direction: row;
+	padding:0 20rpx;
+	align-items: center;
+	margin-bottom: 20rpx;
+}
+.line-left{
+	width:6rpx;
+	height:26rpx;
+	background-color: #e00000;
+	margin-right:10rpx;
+}
+.list-title-txt{
+	font-size: 30rpx;
+	font-weight: bold;
+}
+.list-img{
+	width:150rpx;
+	height:150rpx;
+	margin-left:20rpx;
+}
+.list-con-time{
+	font-size: 24rpx;
+	color: #b6b6b6;
+	position: absolute;
+	bottom:10rpx;
+}
+ .media-item-line {
+        position: absolute;
+        left: 30upx;
+        right: 30upx;
+        bottom: 0;
+        height: 1upx;
+        background-color: #ebebeb;
+    }
+.logobox{
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+.logo-item{
+	width:152rpx;
+	height:152rpx;
+	margin:0 20rpx;
+	margin-bottom:20rpx;
+}
+.ad{
+	height:149rpx;
+	margin-top:50rpx;
+	margin-bottom:40rpx;
+}
+.service-list{
+	position: relative;
+	padding:26rpx 20rpx;
+	flex-direction: row;
+	justify-content: space-between;
+}
+.company{
+	font-size: 30rpx;
+	width:286rpx;
+	text-overflow: ellipsis;
+}
+.font-grey{
+	font-size: 30rpx;
+	color:#979797;
+	width:160rpx;
+	text-overflow: ellipsis;
+}
+.font-red{
+	font-size: 30rpx;
+	color:#E00000;
+	width:140rpx;
+	text-overflow: ellipsis;
+}
+.refresh {
+	justify-content: center;
+}
+
+.refresh-view {
+	/* #ifndef APP-NVUE */
+	display: flex;
+	/* #endif */
+	width: 750rpx;
+	height: 64px;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: center;
+	justify-content: center;
+}
+
+.refresh-icon {
+	width: 32px;
+	height: 32px;
+	transition-duration: .5s;
+	transition-property: transform;
+	transform: rotate(0deg);
+	transform-origin: 15px 15px;
+}
+
+.refresh-icon-active {
+	transform: rotate(180deg);
+}
+
+.loading-icon {
+	width: 28px;
+	height: 28px;
+	margin-right: 5px;
+	color: gray;
+}
+
+.loading-text {
+	margin-left: 2px;
+	font-size: 16px;
+	color: #999999;
+}
+
+.loading-more {
+	align-items: center;
+	justify-content: center;
+	padding-top: 14px;
+	padding-bottom: 14px;
+	text-align: center;
+}
+
+.loading-more-text {
+	font-size: 28upx;
+	color: #999;
+}
+
+</style>

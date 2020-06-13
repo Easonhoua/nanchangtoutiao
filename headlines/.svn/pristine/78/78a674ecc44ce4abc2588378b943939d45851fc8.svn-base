@@ -1,0 +1,49 @@
+<template>
+	<div>
+		<view class="top-iconbox">
+				<view class="top-icon-item">
+					<image class="top-icon" src="../../static/img/home/g_m_icon1@3x.png"></image>
+					<text class="top-icon-txt">企业对话</text>
+				</view>
+				<view class="top-icon-item">
+					<image class="top-icon" src="../../static/img/home/g_m_icon2@3x.png"></image>
+					<text class="top-icon-txt">赣商沙龙</text>
+				</view>
+				<view class="top-icon-item">
+					<image class="top-icon" src="../../static/img/home/g_m_icon3@3x.png"></image>
+					<text class="top-icon-txt">招商路演</text>
+				</view>
+				<view class="top-icon-item">
+					<image class="top-icon" src="../../static/img/home/g_m_icon4@3x.png"></image>
+					<text class="top-icon-txt">企业数据库</text>
+				</view>
+		</view>
+	</div>
+</template>
+
+<script>
+	export default {
+		
+	}
+</script>
+
+<style>
+.top-iconbox{
+	flex-direction: row;
+	padding:40rpx;
+	justify-content: space-between;
+}
+.top-icon-item{
+	align-items: center;
+	justify-content: center;
+}
+.top-icon{
+	width: 70rpx;
+	height:70rpx;
+	margin-bottom:10rpx;
+}
+.top-icon-txt{
+	font-size: 26rpx;
+	color:#909090;
+}
+</style>
